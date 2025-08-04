@@ -74,7 +74,7 @@ export default function KPICards({ analytics }: KPICardsProps) {
                   <div className={`flex items-center mt-2 text-sm ${kpi.trendColor}`}>
                     <TrendIconComponent className="h-4 w-4 mr-1" />
                     <span data-testid={`${kpi.testId}-trend`}>{kpi.trend}</span>
-                    <span className="text-gray-500 ml-1">from last month</span>
+                    <span className="text-gray-500 ml-1">trending</span>
                   </div>
                 </div>
                 <div className={`${kpi.iconBg} p-3 rounded-full`}>

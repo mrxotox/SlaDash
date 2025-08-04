@@ -254,6 +254,8 @@ async function parseCSVToTickets(csvData: string) {
         ticketData.requesterName &&
         ticketData.status &&
         ticketData.technician &&
+        ticketData.technician !== '-' &&
+        ticketData.technician.length > 2 &&
         !ticketData.status.includes('<') &&
         !ticketData.technician.includes('<') &&
         ticketData.status.length < 100 &&
@@ -262,7 +264,7 @@ async function parseCSVToTickets(csvData: string) {
       // Clean HTML content from critical fields
       ticketData.subject = cleanHTMLContent(ticketData.subject);
       ticketData.status = cleanHTMLContent(ticketData.status);
-      ticketData.technician = cleanHTMLContent(ticketData.technician);
+      ticketData.technician = cleanTechnicianName(ticketData.technician);
       ticketData.category = cleanHTMLContent(ticketData.category);
       ticketData.priority = cleanHTMLContent(ticketData.priority);
       ticketData.description = cleanHTMLContent(ticketData.description).substring(0, 500);
@@ -317,6 +319,40 @@ function cleanHTMLContent(text: string): string {
   text = text.replace(/class="[^"]*"/g, '');
   
   return text;
+}
+
+function cleanTechnicianName(name: string): string {
+  if (!name) return '';
+  
+  // Clean HTML first
+  name = cleanHTMLContent(name);
+  
+  // Remove common prefixes and suffixes
+  name = name.replace(/^(Sr\.|Sra\.|Dr\.|Dra\.|Ing\.|Lic\.)\s*/i, '');
+  
+  // Normalize common name variations
+  const nameMap: Record<string, string> = {
+    'gelson munoz': 'Gelson Munoz',
+    'gelson muñoz': 'Gelson Munoz', 
+    'gelson gadiel munoz': 'Gelson Munoz',
+    'gelson gadiel muñoz': 'Gelson Munoz',
+    'gelson jose munoz': 'Gelson Munoz',
+    'gelson j munoz': 'Gelson Munoz',
+    'jose johan fabian agramonte': 'Jose Johan Fabian Agramonte',
+    'johan agramonte': 'Jose Johan Fabian Agramonte',
+    'fabian agramonte': 'Jose Johan Fabian Agramonte'
+  };
+  
+  const normalized = name.toLowerCase().trim();
+  if (nameMap[normalized]) {
+    return nameMap[normalized];
+  }
+  
+  // Title case the name
+  return name.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+    .trim();
 }
 
 async function calculateAnalytics(tickets: any[]) {

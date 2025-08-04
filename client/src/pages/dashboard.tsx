@@ -158,12 +158,22 @@ export default function Dashboard() {
 
             <KPICards analytics={dashboardData.analytics} />
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <StatusChart data={dashboardData.statusStats} />
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <StatusChart data={dashboardData.statusStats} />
+              </div>
               <SLATrendChart slaCompliance={dashboardData.analytics.slaCompliance} />
             </div>
 
-            <RecentTickets tickets={dashboardData.recentTickets} />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <CategoryChart data={dashboardData.categoryStats} />
+              <TechnicianChart data={dashboardData.technicianStats} />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <SLATable data={dashboardData.technicianStats} />
+              <RecentTickets tickets={dashboardData.recentTickets} />
+            </div>
           </div>
         );
     }
