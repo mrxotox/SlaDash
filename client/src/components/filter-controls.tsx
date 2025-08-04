@@ -17,11 +17,11 @@ export default function FilterControls({ onFiltersChange, categoryStats, technic
   const handleFilterChange = (key: keyof TicketFilters, value: string) => {
     const newFilters = {
       ...filters,
-      [key]: value || undefined,
+      [key]: (value === 'all' || !value) ? undefined : value,
     };
     
     // Handle date range
-    if (key === 'dateRange' && value) {
+    if (key === 'dateRange' && value && value !== 'all') {
       const days = parseInt(value);
       const end = new Date();
       const start = new Date();
@@ -74,7 +74,7 @@ export default function FilterControls({ onFiltersChange, categoryStats, technic
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categoryStats.map((category) => (
                   <SelectItem key={category.name} value={category.name}>
                     {category.name} ({category.count})
@@ -93,7 +93,7 @@ export default function FilterControls({ onFiltersChange, categoryStats, technic
                 <SelectValue placeholder="All Technicians" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Technicians</SelectItem>
+                <SelectItem value="all">All Technicians</SelectItem>
                 {technicianStats.map((tech) => (
                   <SelectItem key={tech.name} value={tech.name}>
                     {tech.name} ({tech.totalTickets})
@@ -112,7 +112,7 @@ export default function FilterControls({ onFiltersChange, categoryStats, technic
                 <SelectValue placeholder="All Priorities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Priorities</SelectItem>
+                <SelectItem value="all">All Priorities</SelectItem>
                 <SelectItem value="Alto">High</SelectItem>
                 <SelectItem value="Medio">Medium</SelectItem>
                 <SelectItem value="Bajo">Low</SelectItem>
