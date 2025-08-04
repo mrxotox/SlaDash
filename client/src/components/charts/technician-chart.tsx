@@ -64,7 +64,7 @@ export default function TechnicianChart({ data }: TechnicianChartProps) {
               />
               <Bar 
                 dataKey="sla" 
-                fill={(entry: any) => getBarColor(entry.sla)}
+                fill="hsl(207, 90%, 54%)"
                 radius={[0, 4, 4, 0]}
               />
             </BarChart>

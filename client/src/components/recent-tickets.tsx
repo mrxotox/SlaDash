@@ -36,7 +36,7 @@ export default function RecentTickets({ tickets }: RecentTicketsProps) {
     setCurrentPage(1);
   };
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | null | undefined) => {
     if (!date) return '-';
     return format(new Date(date), 'MMM d, yyyy');
   };

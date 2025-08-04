@@ -32,9 +32,9 @@ export const tickets = pgTable("tickets", {
 export const ticketAnalytics = pgTable("ticket_analytics", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   totalTickets: integer("total_tickets").notNull(),
-  slaCompliance: decimal("sla_compliance", { precision: 5, scale: 2 }).notNull(),
+  slaCompliance: text("sla_compliance").notNull(),
   overdueTickets: integer("overdue_tickets").notNull(),
-  avgResolutionTime: decimal("avg_resolution_time", { precision: 8, scale: 2 }).notNull(),
+  avgResolutionTime: text("avg_resolution_time").notNull(),
   calculatedAt: timestamp("calculated_at").notNull().default(sql`now()`),
 });
 

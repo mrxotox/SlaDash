@@ -19,7 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      if (req.file.mimetype !== 'text/csv') {
+      if (!req.file.originalname.toLowerCase().endsWith('.csv')) {
         return res.status(400).json({ message: "File must be a CSV" });
       }
 
@@ -291,9 +291,9 @@ async function calculateAnalytics(tickets: any[]) {
 
   return {
     totalTickets,
-    slaCompliance: parseFloat(slaCompliance.toFixed(2)),
+    slaCompliance: slaCompliance.toFixed(2),
     overdueTickets,
-    avgResolutionTime
+    avgResolutionTime: avgResolutionTime.toFixed(2)
   };
 }
 

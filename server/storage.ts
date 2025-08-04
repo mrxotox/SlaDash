@@ -60,7 +60,27 @@ export class MemStorage implements IStorage {
     
     for (const insertTicket of insertTickets) {
       const id = randomUUID();
-      const ticket: Ticket = { ...insertTicket, id };
+      const ticket: Ticket = { 
+        ...insertTicket, 
+        id,
+        description: insertTicket.description || null,
+        technician: insertTicket.technician || null,
+        dueByDate: insertTicket.dueByDate || null,
+        respondedDate: insertTicket.respondedDate || null,
+        completedDate: insertTicket.completedDate || null,
+        resolvedTime: insertTicket.resolvedTime || null,
+        category: insertTicket.category || null,
+        subCategory: insertTicket.subCategory || null,
+        priority: insertTicket.priority || null,
+        urgency: insertTicket.urgency || null,
+        impact: insertTicket.impact || null,
+        requestType: insertTicket.requestType || null,
+        department: insertTicket.department || null,
+        resolution: insertTicket.resolution || null,
+        resolutionTime: insertTicket.resolutionTime || null,
+        isOverdue: insertTicket.isOverdue || false,
+        isResponseOverdue: insertTicket.isResponseOverdue || false
+      };
       this.tickets.set(id, ticket);
       tickets.push(ticket);
     }
