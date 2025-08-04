@@ -21,13 +21,13 @@ export default function KPICards({ analytics }: KPICardsProps) {
     },
     {
       title: 'SLA Compliance',
-      value: `${analytics.slaCompliance.toFixed(1)}%`,
+      value: `${(analytics.slaCompliance || 0).toFixed(1)}%`,
       icon: Clock,
       iconBg: 'bg-green-100',
       iconColor: 'text-green-600',
-      trend: analytics.slaCompliance >= 95 ? '+2.1%' : '-1.3%',
-      trendIcon: analytics.slaCompliance >= 95 ? TrendingUp : TrendingDown,
-      trendColor: analytics.slaCompliance >= 95 ? 'text-green-600' : 'text-red-600',
+      trend: (analytics.slaCompliance || 0) >= 95 ? '+2.1%' : '-1.3%',
+      trendIcon: (analytics.slaCompliance || 0) >= 95 ? TrendingUp : TrendingDown,
+      trendColor: (analytics.slaCompliance || 0) >= 95 ? 'text-green-600' : 'text-red-600',
       testId: 'kpi-sla-compliance'
     },
     {
@@ -43,7 +43,7 @@ export default function KPICards({ analytics }: KPICardsProps) {
     },
     {
       title: 'Avg Resolution Time',
-      value: `${analytics.avgResolutionTime.toFixed(1)}d`,
+      value: `${(analytics.avgResolutionTime || 0).toFixed(1)}d`,
       icon: CheckCircle,
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600',

@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           slaCompliance: parseFloat(slaCompliance.toFixed(1)),
           overdueTickets,
           closedTickets,
-          avgResolutionTime: calculateAvgResolutionTime(recentTickets)
+          avgResolutionTime: calculateAvgResolutionTime(recentTickets) || 0
         },
         technicianStats,
         categoryStats,
@@ -301,14 +301,23 @@ function calculateAvgResolutionTime(tickets: any[]): number {
   const completedTickets = tickets.filter(t => t.createdDate && t.completedDate);
   if (completedTickets.length === 0) return 0;
 
-  const totalTime = completedTickets.reduce((sum, ticket) => {
-    const created = new Date(ticket.createdDate).getTime();
-    const completed = new Date(ticket.completedDate).getTime();
-    return sum + (completed - created);
-  }, 0);
+  try {
+    const totalTime = completedTickets.reduce((sum, ticket) => {
+      const created = new Date(ticket.createdDate).getTime();
+      const completed = new Date(ticket.completedDate).getTime();
+      if (isNaN(created) || isNaN(completed)) return sum;
+      return sum + (completed - created);
+    }, 0);
 
-  // Return average time in days
-  return parseFloat((totalTime / completedTickets.length / (1000 * 60 * 60 * 24)).toFixed(2));
+    if (totalTime === 0) return 0;
+
+    // Return average time in days
+    const avgDays = totalTime / completedTickets.length / (1000 * 60 * 60 * 24);
+    return parseFloat(avgDays.toFixed(2)) || 0;
+  } catch (error) {
+    console.error('Error calculating average resolution time:', error);
+    return 0;
+  }
 }
 
 function calculateTechnicianStats(tickets: any[]) {
