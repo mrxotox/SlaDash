@@ -31,7 +31,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedTickets = await storage.createTickets(tickets);
       
       // Calculate and save analytics
-      const analytics = await calculateAnalytics(savedTickets);
+      const analyticsResult = await calculateAnalytics(savedTickets);
+      const analytics = {
+        totalTickets: analyticsResult.totalTickets,
+        slaCompliance: analyticsResult.slaCompliance.toString(),
+        overdueTickets: analyticsResult.overdueTickets,
+        avgResolutionTime: analyticsResult.avgResolutionTime.toString()
+      };
       await storage.saveAnalytics(analytics);
 
       res.json({ 
@@ -242,7 +248,25 @@ async function parseCSVToTickets(csvData: string) {
       }
     });
 
-    if (ticketData.requestId && ticketData.subject && ticketData.requesterName) {
+    // Clean data and validate
+    if (ticketData.requestId && 
+        ticketData.subject && 
+        ticketData.requesterName &&
+        ticketData.status &&
+        ticketData.technician &&
+        !ticketData.status.includes('<') &&
+        !ticketData.technician.includes('<') &&
+        ticketData.status.length < 100 &&
+        ticketData.technician.length < 100) {
+      
+      // Clean HTML content from critical fields
+      ticketData.subject = cleanHTMLContent(ticketData.subject);
+      ticketData.status = cleanHTMLContent(ticketData.status);
+      ticketData.technician = cleanHTMLContent(ticketData.technician);
+      ticketData.category = cleanHTMLContent(ticketData.category);
+      ticketData.priority = cleanHTMLContent(ticketData.priority);
+      ticketData.description = cleanHTMLContent(ticketData.description).substring(0, 500);
+      
       tickets.push(ticketData);
     }
   }
@@ -261,39 +285,89 @@ function parseCSVLine(line: string): string[] {
     if (char === '"') {
       inQuotes = !inQuotes;
     } else if (char === ',' && !inQuotes) {
-      result.push(current);
+      result.push(current.trim());
       current = '';
     } else {
       current += char;
     }
   }
   
-  result.push(current);
+  result.push(current.trim());
   return result;
+}
+
+function cleanHTMLContent(text: string): string {
+  if (!text) return '';
+  
+  // Remove HTML tags
+  text = text.replace(/<[^>]*>/g, '');
+  
+  // Remove HTML entities
+  text = text.replace(/&[a-zA-Z0-9#]+;/g, '');
+  
+  // Remove extra whitespace and special characters
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  // Remove URLs and file paths
+  text = text.replace(/https?:\/\/[^\s]+/g, '');
+  text = text.replace(/\/app\/[^\s]+/g, '');
+  
+  // Remove style attributes and other noise
+  text = text.replace(/style="[^"]*"/g, '');
+  text = text.replace(/class="[^"]*"/g, '');
+  
+  return text;
 }
 
 async function calculateAnalytics(tickets: any[]) {
   const totalTickets = tickets.length;
   const overdueTickets = tickets.filter(t => t.isOverdue).length;
+  const closedTickets = tickets.filter(t => 
+    t.status && (
+      t.status.toLowerCase().includes('cerrada') ||
+      t.status.toLowerCase().includes('cerrado') ||
+      t.status.toLowerCase().includes('completado') ||
+      t.status.toLowerCase().includes('resuelto') ||
+      t.status.toLowerCase().includes('closed') ||
+      t.status.toLowerCase().includes('resolved')
+    )
+  ).length;
   
-  // Calculate SLA compliance
-  const ticketsWithSLA = tickets.filter(t => t.dueByDate);
-  const onTimeTickets = ticketsWithSLA.filter(t => {
-    if (!t.completedDate || !t.dueByDate) return false;
-    return new Date(t.completedDate) <= new Date(t.dueByDate);
-  }).length;
+  // Calculate SLA compliance based on priority and completion times
+  const slaCompliantTickets = tickets.filter(ticket => {
+    if (!ticket.createdDate || !ticket.completedDate || !ticket.priority) {
+      return false;
+    }
+    
+    const created = new Date(ticket.createdDate);
+    const completed = new Date(ticket.completedDate);
+    const hoursDiff = (completed.getTime() - created.getTime()) / (1000 * 60 * 60);
+    
+    // SLA targets based on priority (from Excel)
+    const slaTargets: Record<string, number> = {
+      'Crítica': 8.5,   // 0.5 days in hours
+      'Alta': 12.5,     // 0.5 days in hours  
+      'Media': 72,      // 3 days in hours
+      'Baja': 120,      // 5 days in hours
+      'Normal': 72      // 3 days in hours
+    };
+    
+    const target = slaTargets[ticket.priority] || 72; // Default to 3 days
+    return hoursDiff <= target;
+  });
   
-  const slaCompliance = ticketsWithSLA.length > 0 
-    ? (onTimeTickets / ticketsWithSLA.length) * 100 
+  const slaCompliance = totalTickets > 0 
+    ? (slaCompliantTickets.length / totalTickets) * 100 
     : 0;
 
   const avgResolutionTime = calculateAvgResolutionTime(tickets);
 
   return {
     totalTickets,
-    slaCompliance: slaCompliance.toFixed(2),
+    slaCompliance: parseFloat(slaCompliance.toFixed(1)),
     overdueTickets,
-    avgResolutionTime: avgResolutionTime.toFixed(2)
+    closedTickets,
+    avgResolutionTime
   };
 }
 
