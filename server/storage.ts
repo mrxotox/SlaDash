@@ -14,7 +14,7 @@ export interface IStorage {
   
   // Analytics methods
   saveAnalytics(analytics: InsertTicketAnalytics): Promise<TicketAnalytics>;
-  getLatestAnalytics(): Promise<TicketAnalytics | undefined>;
+  getAnalytics(): Promise<TicketAnalytics | undefined>;
 }
 
 export interface TicketFilters {
@@ -139,7 +139,7 @@ export class MemStorage implements IStorage {
     return analytics;
   }
 
-  async getLatestAnalytics(): Promise<TicketAnalytics | undefined> {
+  async getAnalytics(): Promise<TicketAnalytics | undefined> {
     return this.analytics;
   }
 }

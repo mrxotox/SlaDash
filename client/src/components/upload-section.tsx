@@ -58,9 +58,9 @@ export default function UploadSection() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'text/csv': ['.csv'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+      'text/csv': ['.csv']
     },
     maxFiles: 1
   })
@@ -70,7 +70,7 @@ export default function UploadSection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5" />
-          Upload Ticket Data
+          Upload Excel Data
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -105,11 +105,11 @@ export default function UploadSection() {
               <FileText className="h-8 w-8 text-gray-400" />
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {isDragActive
-                  ? "Drop your CSV file here"
-                  : "Drag & drop a CSV file here, or click to select"}
+                  ? "Drop your Excel file here"
+                  : "Drag & drop an Excel file here, or click to select"}
               </p>
               <p className="text-xs text-gray-500">
-                Supports CSV, XLS, XLSX files
+                Supports Excel (.xlsx, .xls) and CSV files
               </p>
             </div>
           )}
