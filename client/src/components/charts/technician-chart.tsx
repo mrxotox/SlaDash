@@ -30,13 +30,13 @@ export default function TechnicianChart({ data }: TechnicianChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80" data-testid="technician-chart-container">
+        <div className="h-96" data-testid="technician-chart-container">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} layout="horizontal" margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 type="number"
-                domain={[80, 100]}
+                domain={[0, 100]}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#666' }}
