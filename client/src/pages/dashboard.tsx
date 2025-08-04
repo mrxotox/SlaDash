@@ -9,6 +9,7 @@ import StatusChart from '@/components/charts/status-chart';
 import SLATrendChart from '@/components/charts/sla-trend-chart';
 import CategoryChart from '@/components/charts/category-chart';
 import TechnicianChart from '@/components/charts/technician-chart';
+import PriorityChart from '@/components/charts/priority-chart';
 import SLATable from '@/components/sla-table';
 import RecentTickets from '@/components/recent-tickets';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,11 +98,16 @@ export default function Dashboard() {
               technicianStats={dashboardData.technicianStats}
             />
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <StatusChart data={dashboardData.statusStats} />
-              <CategoryChart data={dashboardData.categoryStats} />
-              <SLATrendChart slaCompliance={dashboardData.analytics.slaCompliance} />
-              <TechnicianChart data={dashboardData.technicianStats} />
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StatusChart data={dashboardData.statusStats} />
+                <CategoryChart data={dashboardData.categoryStats} />
+                <PriorityChart data={dashboardData.priorityStats} />
+                <TechnicianChart data={dashboardData.technicianStats} />
+              </div>
+              <div className="xl:col-span-1">
+                <SLATrendChart slaCompliance={dashboardData.analytics.slaCompliance} />
+              </div>
             </div>
           </div>
         );
