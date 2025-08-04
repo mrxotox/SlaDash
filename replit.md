@@ -14,7 +14,12 @@ This is a full-stack ticket management dashboard application built with React, E
 - ✅ **MAJOR FIX**: Implemented comprehensive HTML content cleaning for contaminated CSV data
 - ✅ **DATA QUALITY**: Added technician name normalization to prevent duplicates (e.g., "Gelson Munoz" variations)
 - ✅ **UX IMPROVEMENT**: Reorganized dashboard layout with better grid distribution (xl:col-span-2/3)
-- ✅ **ACCURACY**: Fixed SLA calculation based on priority levels from Excel (Crítica: 8.5h, Alta: 12.5h, Media: 72h, Baja: 120h)
+- ✅ **ACCURACY**: Fixed SLA calculation based on EXACT Excel parameters from user's document:
+  - Crítica/Urgente (P1): 4-8 horas with 30min response time
+  - Alta (P2): 8-12 horas with 30min response time
+  - Media (P3): 1-3 días hábiles (72h) with 30min response time  
+  - Baja (P4): 3-5 días hábiles (120h) with 30min response time
+  - Different SLA for Incidents vs Services vs Requirements as per Excel matrix
 - ✅ **UI POLISH**: Changed misleading "from last month" text to "trending" in KPI cards
 
 # User Preferences

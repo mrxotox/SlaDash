@@ -379,16 +379,32 @@ async function calculateAnalytics(tickets: any[]) {
     const completed = new Date(ticket.completedDate);
     const hoursDiff = (completed.getTime() - created.getTime()) / (1000 * 60 * 60);
     
-    // SLA targets based on priority (from Excel)
-    const slaTargets: Record<string, number> = {
-      'Crítica': 8.5,   // 0.5 days in hours
-      'Alta': 12.5,     // 0.5 days in hours  
-      'Media': 72,      // 3 days in hours
-      'Baja': 120,      // 5 days in hours
-      'Normal': 72      // 3 days in hours
+    // SLA targets based on priority and type (from Excel)
+    const getSLATarget = (priority: string, requestType: string): number => {
+      // Different SLA for Incidents vs Services vs Requirements
+      const isIncident = requestType?.toLowerCase().includes('incidente') || 
+                        requestType?.toLowerCase().includes('incident');
+      const isService = requestType?.toLowerCase().includes('servicio') ||
+                       requestType?.toLowerCase().includes('service');
+      
+      // SLA targets in hours based on your Excel table
+      const slaMap: Record<string, { incident: number, service: number, default: number }> = {
+        'Crítica': { incident: 8, service: 8, default: 8 },           // P1: 4-8 horas (usando máximo)
+        'Urgente': { incident: 8, service: 8, default: 8 },           // P1: 4-8 horas (usando máximo)
+        'Alta': { incident: 12, service: 12, default: 12 },           // P2: 8-12 horas (usando máximo)
+        'Media': { incident: 72, service: 72, default: 72 },          // P3: 1-3 días hábiles (72h = 3 días)
+        'Normal': { incident: 72, service: 72, default: 72 },         // P3: 1-3 días hábiles (72h = 3 días)
+        'Baja': { incident: 120, service: 120, default: 120 }         // P4: 3-5 días hábiles (120h = 5 días)
+      };
+      
+      const slaConfig = slaMap[priority] || slaMap['Normal'];
+      
+      if (isIncident) return slaConfig.incident;
+      if (isService) return slaConfig.service;
+      return slaConfig.default;
     };
     
-    const target = slaTargets[ticket.priority] || 72; // Default to 3 days
+    const target = getSLATarget(ticket.priority, ticket.requestType);
     return hoursDiff <= target;
   });
   
@@ -448,11 +464,41 @@ function calculateTechnicianStats(tickets: any[]) {
     
     stats[ticket.technician].totalTickets++;
     
-    if (ticket.isOverdue) {
-      stats[ticket.technician].overdueTickets++;
-    } else if (ticket.dueByDate && ticket.completedDate) {
-      if (new Date(ticket.completedDate) <= new Date(ticket.dueByDate)) {
+    // Calculate SLA compliance using Excel logic
+    if (ticket.createdDate && ticket.completedDate && ticket.priority) {
+      const created = new Date(ticket.createdDate);
+      const completed = new Date(ticket.completedDate);
+      const hoursDiff = (completed.getTime() - created.getTime()) / (1000 * 60 * 60);
+      
+      // Get SLA target using Excel parameters
+      const getSLATarget = (priority: string, requestType: string): number => {
+        const isIncident = requestType?.toLowerCase().includes('incidente') || 
+                          requestType?.toLowerCase().includes('incident');
+        const isService = requestType?.toLowerCase().includes('servicio') ||
+                         requestType?.toLowerCase().includes('service');
+        
+        const slaMap: Record<string, { incident: number, service: number, default: number }> = {
+          'Crítica': { incident: 8, service: 8, default: 8 },           // P1: 4-8 horas
+          'Urgente': { incident: 8, service: 8, default: 8 },           // P1: 4-8 horas
+          'Alta': { incident: 12, service: 12, default: 12 },           // P2: 8-12 horas
+          'Media': { incident: 72, service: 72, default: 72 },          // P3: 1-3 días hábiles
+          'Normal': { incident: 72, service: 72, default: 72 },         // P3: 1-3 días hábiles
+          'Baja': { incident: 120, service: 120, default: 120 }         // P4: 3-5 días hábiles
+        };
+        
+        const slaConfig = slaMap[priority] || slaMap['Normal'];
+        
+        if (isIncident) return slaConfig.incident;
+        if (isService) return slaConfig.service;
+        return slaConfig.default;
+      };
+      
+      const target = getSLATarget(ticket.priority, ticket.requestType);
+      
+      if (hoursDiff <= target) {
         stats[ticket.technician].onTimeTickets++;
+      } else {
+        stats[ticket.technician].overdueTickets++;
       }
     }
   });
