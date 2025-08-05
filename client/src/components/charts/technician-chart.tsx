@@ -8,9 +8,28 @@ interface TechnicianChartProps {
 }
 
 export default function TechnicianChart({ data }: TechnicianChartProps) {
+  // Safety check for data
+  if (!data || !Array.isArray(data)) {
+    return (
+      <Card className="h-full">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center space-x-2">
+            <Users className="h-5 w-5 text-primary" />
+            <span>Technician Performance</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            No technician data available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Filter and sort technicians by total tickets (show only those with tickets)
   const filteredData = data
-    .filter(tech => tech.totalTickets > 0)
+    .filter(tech => tech && tech.totalTickets > 0 && typeof tech.slaCompliance === 'number')
     .sort((a, b) => b.totalTickets - a.totalTickets)
     .slice(0, 10); // Show top 10 technicians
 
@@ -64,8 +83,8 @@ export default function TechnicianChart({ data }: TechnicianChartProps) {
                   </div>
                   <div className="flex items-center space-x-2">
                     {getSLAIcon(tech.slaCompliance)}
-                    <Badge className={`${getSLAColor(tech.slaCompliance)} border-0 font-semibold`}>
-                      {tech.slaCompliance.toFixed(1)}%
+                    <Badge className={`${getSLAColor(tech.slaCompliance || 0)} border-0 font-semibold`}>
+                      {(tech.slaCompliance || 0).toFixed(1)}%
                     </Badge>
                   </div>
                 </div>
@@ -74,16 +93,16 @@ export default function TechnicianChart({ data }: TechnicianChartProps) {
                   {/* SLA Progress Bar */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-600 dark:text-gray-400">SLA Compliance</span>
-                    <span className="font-medium">{tech.slaCompliance.toFixed(1)}%</span>
+                    <span className="font-medium">{(tech.slaCompliance || 0).toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full transition-all duration-300 ${
-                        tech.slaCompliance >= 95 ? 'bg-green-500' :
-                        tech.slaCompliance >= 85 ? 'bg-yellow-500' :
-                        tech.slaCompliance >= 70 ? 'bg-orange-500' : 'bg-red-500'
+                        (tech.slaCompliance || 0) >= 95 ? 'bg-green-500' :
+                        (tech.slaCompliance || 0) >= 85 ? 'bg-yellow-500' :
+                        (tech.slaCompliance || 0) >= 70 ? 'bg-orange-500' : 'bg-red-500'
                       }`}
-                      style={{ width: `${Math.min(tech.slaCompliance, 100)}%` }}
+                      style={{ width: `${Math.min(tech.slaCompliance || 0, 100)}%` }}
                     />
                   </div>
                   

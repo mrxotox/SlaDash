@@ -10,8 +10,29 @@ interface SLATableProps {
 }
 
 export default function SLATable({ data }: SLATableProps) {
+  // Safety check for data
+  if (!data || !Array.isArray(data)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Users className="h-5 w-5 text-primary" />
+            <span>SLA Performance by Technician</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            No technician data available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Sort by SLA compliance descending
-  const sortedData = [...data].sort((a, b) => b.slaCompliance - a.slaCompliance);
+  const sortedData = [...data]
+    .filter(tech => tech && typeof tech.slaCompliance === 'number')
+    .sort((a, b) => (b.slaCompliance || 0) - (a.slaCompliance || 0));
 
   const getSLABadgeVariant = (sla: number) => {
     if (sla >= 95) return 'default'; // Green
@@ -29,7 +50,7 @@ export default function SLATable({ data }: SLATableProps) {
         tech.totalTickets,
         tech.onTimeTickets,
         tech.overdueTickets,
-        `${tech.slaCompliance.toFixed(1)}%`
+        `${(tech.slaCompliance || 0).toFixed(1)}%`
       ].join(','))
     ].join('\n');
 
@@ -95,21 +116,21 @@ export default function SLATable({ data }: SLATableProps) {
                     {tech.overdueTickets}
                   </TableCell>
                   <TableCell data-testid={`sla-compliance-${index}`}>
-                    <Badge variant={getSLABadgeVariant(tech.slaCompliance)}>
-                      {tech.slaCompliance.toFixed(1)}%
+                    <Badge variant={getSLABadgeVariant(tech.slaCompliance || 0)}>
+                      {(tech.slaCompliance || 0).toFixed(1)}%
                     </Badge>
                   </TableCell>
                   <TableCell data-testid={`performance-indicator-${index}`}>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${
-                          tech.slaCompliance >= 95
+                          (tech.slaCompliance || 0) >= 95
                             ? 'bg-green-500'
-                            : tech.slaCompliance >= 90
+                            : (tech.slaCompliance || 0) >= 90
                             ? 'bg-yellow-500'
                             : 'bg-red-500'
                         }`}
-                        style={{ width: `${Math.min(tech.slaCompliance, 100)}%` }}
+                        style={{ width: `${Math.min(tech.slaCompliance || 0, 100)}%` }}
                       />
                     </div>
                   </TableCell>
