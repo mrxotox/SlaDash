@@ -41,6 +41,21 @@ This is a full-stack ticket management dashboard application built with React, E
 
 Preferred communication style: Simple, everyday language.
 
+# Project Context
+
+## Business Problem
+This dashboard eliminates the dependency on Excel files for IT help desk analytics. Previously, IT leaders had to:
+- Manually export data from ServiceDesk to Excel files
+- Use complex Excel formulas for SLA calculations and KPI metrics
+- Create manual reports for technician performance analysis
+
+## Solution
+A web-based dashboard that:
+- Automatically processes ServiceDesk exports (Excel/CSV files)
+- Calculates real-time SLA compliance metrics
+- Provides interactive visualizations for ticket categories, priorities, and technician performance
+- Enables data-driven decision making for IT leadership
+
 # System Architecture
 
 ## Frontend Architecture
