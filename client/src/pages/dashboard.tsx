@@ -3,17 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { DashboardData, TicketFilters } from '@/types/ticket';
 import Sidebar from '@/components/sidebar';
 import UploadSection from '@/components/upload-section';
-import KPICards from '@/components/kpi-cards';
+import ModernKPICards from '@/components/modern-kpi-cards';
 import FilterControls from '@/components/filter-controls';
-import StatusChart from '@/components/charts/status-chart';
-import SLATrendChart from '@/components/charts/sla-trend-chart';
-import CategoryChart from '@/components/charts/category-chart';
-import TechnicianChart from '@/components/charts/technician-chart';
-import PriorityChart from '@/components/charts/priority-chart';
-import SLATable from '@/components/sla-table';
+import StatusOverview from '@/components/charts/status-overview';
+import SLADashboard from '@/components/charts/sla-dashboard';
+import DepartmentAnalytics from '@/components/charts/department-analytics';
+import TechnicianPerformance from '@/components/charts/technician-performance';
 import RecentTickets from '@/components/recent-tickets';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, BarChart3, Users, Target, Building2 } from 'lucide-react';
 
 export default function Dashboard() {
   const [filters, setFilters] = useState<TicketFilters>({});
@@ -82,14 +80,17 @@ export default function Dashboard() {
 
       case 'analytics':
         return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Analytics
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Detailed analytics and performance metrics
-              </p>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <BarChart3 className="inline-block h-8 w-8 mr-3 text-primary" />
+                  Análisis Departamental
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Distribución detallada por categorías y departamentos
+                </p>
+              </div>
             </div>
             
             <FilterControls
@@ -98,88 +99,100 @@ export default function Dashboard() {
               technicianStats={dashboardData.technicianStats}
             />
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <StatusChart data={dashboardData.statusStats} />
-                <CategoryChart data={dashboardData.categoryStats} />
-                <PriorityChart data={dashboardData.priorityStats} />
-                <TechnicianChart data={dashboardData.technicianStats} />
-              </div>
-              <div className="xl:col-span-1">
-                <SLATrendChart slaCompliance={dashboardData.analytics.slaCompliance} />
-              </div>
-            </div>
+            <DepartmentAnalytics 
+              categoryStats={dashboardData.categoryStats}
+              technicianStats={dashboardData.technicianStats}
+            />
+
+            <StatusOverview 
+              statusData={dashboardData.statusStats}
+              priorityData={dashboardData.priorityStats}
+            />
           </div>
         );
 
       case 'technicians':
         return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Technician Performance
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Individual technician metrics and performance
-              </p>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <Users className="inline-block h-8 w-8 mr-3 text-primary" />
+                  Rendimiento de Técnicos
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Métricas individuales y análisis de desempeño
+                </p>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TechnicianChart data={dashboardData.technicianStats} />
-              <SLATable data={dashboardData.technicianStats} />
-            </div>
+            <TechnicianPerformance data={dashboardData.technicianStats} />
           </div>
         );
 
       case 'sla':
         return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                SLA Reports
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Service Level Agreement compliance and performance
-              </p>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <Target className="inline-block h-8 w-8 mr-3 text-primary" />
+                  Reportes SLA
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Cumplimiento de Acuerdos de Nivel de Servicio
+                </p>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SLATrendChart slaCompliance={dashboardData.analytics.slaCompliance} />
-              <SLATable data={dashboardData.technicianStats} />
-            </div>
+            <SLADashboard 
+              analytics={dashboardData.analytics}
+              technicianStats={dashboardData.technicianStats}
+            />
           </div>
         );
 
       default:
         return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Dashboard Overview
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Monitor your helpdesk performance and SLA compliance
-              </p>
-            </div>
-
-            <KPICards analytics={dashboardData.analytics} />
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2">
-                <StatusChart data={dashboardData.statusStats} />
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  Mesa de Ayuda TI - Dashboard
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Monitoreo en tiempo real del rendimiento y cumplimiento SLA
+                </p>
               </div>
-              <SLATrendChart slaCompliance={dashboardData.analytics.slaCompliance} />
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Datos actualizados</span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <CategoryChart data={dashboardData.categoryStats} />
-              <TechnicianChart data={dashboardData.technicianStats} />
-            </div>
+            {/* Modern KPI Cards */}
+            <ModernKPICards 
+              analytics={dashboardData.analytics}
+              technicianStats={dashboardData.technicianStats}
+              statusStats={dashboardData.statusStats}
+              priorityStats={dashboardData.priorityStats}
+            />
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <SLATable data={dashboardData.technicianStats} />
-              <RecentTickets tickets={dashboardData.recentTickets} />
-            </div>
+            {/* Status and Priority Overview */}
+            <StatusOverview 
+              statusData={dashboardData.statusStats}
+              priorityData={dashboardData.priorityStats}
+            />
+
+            {/* SLA Dashboard */}
+            <SLADashboard 
+              analytics={dashboardData.analytics}
+              technicianStats={dashboardData.technicianStats}
+            />
+
+            {/* Recent Tickets */}
+            <RecentTickets tickets={dashboardData.recentTickets} />
           </div>
         );
     }
