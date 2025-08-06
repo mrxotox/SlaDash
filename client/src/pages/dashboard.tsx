@@ -15,7 +15,7 @@ import DepartmentAnalytics from '@/components/charts/department-analytics';
 import TechnicianPerformance from '@/components/charts/technician-performance';
 import AllTickets from '@/components/all-tickets';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, BarChart3, Users, Target, Building2 } from 'lucide-react';
+import { AlertCircle, BarChart3, Users, Target, Building2, List } from 'lucide-react';
 
 export default function Dashboard() {
   const [filters, setFilters] = useState<TicketFilters & { searchTerm?: string }>({});
@@ -256,6 +256,36 @@ export default function Dashboard() {
           </div>
         );
 
+      case 'tickets':
+        return (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <List className="inline-block h-8 w-8 mr-3 text-primary" />
+                  Todos los Tickets
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Vista completa de todos los tickets con filtros avanzados
+                </p>
+              </div>
+            </div>
+            
+            {/* Filters for Tickets */}
+            <FilterControls 
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              categoryStats={dashboardData?.categoryStats || []}
+              technicianStats={dashboardData?.technicianStats || []}
+              priorityStats={dashboardData?.priorityStats || []}
+              statusStats={dashboardData?.statusStats || []}
+            />
+            
+            {/* All Tickets Table */}
+            <AllTickets tickets={dashboardData?.allTickets || []} />
+          </div>
+        );
+
       default:
         return (
           <div className="space-y-8">
@@ -302,8 +332,7 @@ export default function Dashboard() {
               technicianStats={dashboardData.technicianStats}
             />
 
-            {/* All Tickets */}
-            <AllTickets tickets={dashboardData.allTickets} />
+
           </div>
         );
     }

@@ -7,7 +7,8 @@ import {
   FileText,
   TrendingUp,
   Users,
-  Clock
+  Clock,
+  List
 } from "lucide-react"
 
 interface SidebarProps {
@@ -46,6 +47,11 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       id: 'sla',
       label: 'SLA Reports',
       icon: Clock,
+    },
+    {
+      id: 'tickets',
+      label: 'Todos los Tickets',
+      icon: List,
     },
     {
       id: 'export',
