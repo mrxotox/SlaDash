@@ -282,7 +282,7 @@ async function parseExcelToTickets(buffer: Buffer) {
           createdDate: parseExcelDate(row[columnMap.createdDate]) || new Date().toISOString(),
           description: sanitizeValue(row[columnMap.description])?.toString() || '',
           technician: normalizeTechnician(sanitizeValue(row[columnMap.technician])?.toString() || 'No asignado'),
-          status: normalizeStatus(sanitizeValue(row[columnMap.status])?.toString() || 'Abierto'),
+          status: sanitizeValue(row[columnMap.status])?.toString() || 'Abierto',
           dueByDate: parseExcelDate(row[columnMap.dueByDate]) || null,
           respondedDate: parseExcelDate(row[columnMap.respondedDate]) || null,
           completedDate: parseExcelDate(row[columnMap.completedDate]) || null,
