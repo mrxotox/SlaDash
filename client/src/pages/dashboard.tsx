@@ -77,8 +77,9 @@ export default function Dashboard() {
   }
 
   const renderContent = () => {
-    // If no data but date filter is active, show no results message instead of upload
-    if (!dashboardData?.analytics && isDateFilterActive) {
+    // If no data but any filter is active, show no results message instead of upload
+    const isAnyFilterActive = isDateFilterActive || Object.keys(filters).length > 0;
+    if (!dashboardData?.analytics && isAnyFilterActive) {
       return (
         <div className="space-y-8">
           {/* Header */}
@@ -93,7 +94,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span>Filtro aplicado</span>
+              <span>Filtros aplicados ({Object.keys(filters).length + (isDateFilterActive ? 1 : 0)})</span>
             </div>
           </div>
 
@@ -106,10 +107,10 @@ export default function Dashboard() {
           <div className="text-center py-12">
             <AlertCircle className="mx-auto h-12 w-12 text-yellow-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No hay tickets en el rango de fechas seleccionado
+              No hay tickets que coincidan con los filtros aplicados
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Intenta ajustar el rango de fechas o limpiar el filtro para ver todos los tickets.
+              Intenta ajustar los filtros o limpiarlos para ver todos los tickets disponibles.
             </p>
           </div>
         </div>
@@ -170,14 +171,14 @@ export default function Dashboard() {
             
             <AdvancedFilters
               onFiltersChange={handleFiltersChange}
-              categoryStats={dashboardData.categoryStats}
-              technicianStats={dashboardData.technicianStats}
-              priorityStats={dashboardData.priorityStats}
-              statusStats={dashboardData.statusStats}
+              categoryStats={dashboardData.categoryStats || []}
+              technicianStats={dashboardData.technicianStats || []}
+              priorityStats={dashboardData.priorityStats || []}
+              statusStats={dashboardData.statusStats || []}
               requestTypeStats={dashboardData.requestTypeStats || []}
             />
 
-            <TrendsAnalytics tickets={dashboardData.allTickets} />
+            <TrendsAnalytics tickets={dashboardData.allTickets || []} />
           </div>
         );
 
@@ -198,14 +199,14 @@ export default function Dashboard() {
             
             <AdvancedFilters
               onFiltersChange={handleFiltersChange}
-              categoryStats={dashboardData.categoryStats}
-              technicianStats={dashboardData.technicianStats}
-              priorityStats={dashboardData.priorityStats}
-              statusStats={dashboardData.statusStats}
+              categoryStats={dashboardData.categoryStats || []}
+              technicianStats={dashboardData.technicianStats || []}
+              priorityStats={dashboardData.priorityStats || []}
+              statusStats={dashboardData.statusStats || []}
               requestTypeStats={dashboardData.requestTypeStats || []}
             />
 
-            <HeatMapAnalytics tickets={dashboardData.allTickets} />
+            <HeatMapAnalytics tickets={dashboardData.allTickets || []} />
           </div>
         );
 

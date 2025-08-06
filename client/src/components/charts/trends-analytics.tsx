@@ -39,7 +39,8 @@ export default function TrendsAnalytics({ tickets }: TrendsAnalyticsProps) {
     });
     
     return Object.values(weeks)
-      .sort((a, b) => a.week.localeCompare(b.week))
+      .filter(week => week.created > 0) // Only include weeks with data
+      .sort((a, b) => new Date(a.week.split('/').reverse().join('-')).getTime() - new Date(b.week.split('/').reverse().join('-')).getTime())
       .slice(-8); // Last 8 weeks
   };
 
@@ -71,26 +72,35 @@ export default function TrendsAnalytics({ tickets }: TrendsAnalyticsProps) {
     const trends: { [key: string]: { avgTime: number, count: number, month: string } } = {};
     
     resolved.forEach(ticket => {
-      const created = new Date(ticket.createdDate!);
-      const resolved = new Date(ticket.resolvedTime!);
-      const resolutionDays = (resolved.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
-      
-      const monthKey = `${created.getFullYear()}-${created.getMonth() + 1}`;
-      const monthLabel = `${created.getMonth() + 1}/${created.getFullYear()}`;
-      
-      if (!trends[monthKey]) {
-        trends[monthKey] = { avgTime: 0, count: 0, month: monthLabel };
+      try {
+        const created = new Date(ticket.createdDate!);
+        const resolved = new Date(ticket.resolvedTime!);
+        
+        // Skip if dates are invalid
+        if (isNaN(created.getTime()) || isNaN(resolved.getTime())) return;
+        
+        const resolutionDays = Math.max(0, (resolved.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+        
+        const monthKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}`;
+        const monthLabel = `${String(created.getMonth() + 1).padStart(2, '0')}/${created.getFullYear()}`;
+        
+        if (!trends[monthKey]) {
+          trends[monthKey] = { avgTime: 0, count: 0, month: monthLabel };
+        }
+        
+        trends[monthKey].avgTime += resolutionDays;
+        trends[monthKey].count++;
+      } catch (error) {
+        console.warn('Error processing ticket for trends:', error);
       }
-      
-      trends[monthKey].avgTime += resolutionDays;
-      trends[monthKey].count++;
     });
     
     return Object.values(trends)
       .map(trend => ({
         ...trend,
-        avgTime: trend.count > 0 ? trend.avgTime / trend.count : 0
+        avgTime: trend.count > 0 ? Math.round((trend.avgTime / trend.count) * 10) / 10 : 0
       }))
+      .filter(trend => trend.count > 0) // Only include months with resolved tickets
       .sort((a, b) => a.month.localeCompare(b.month))
       .slice(-6); // Last 6 months
   };
