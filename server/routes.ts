@@ -180,6 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           technicianStats: [],
           departmentStats: [],
           requestTypeStats: [],
+          lastUploadTime,
           message: "No tickets available. Please upload a file to start analyzing your data."
         });
       }

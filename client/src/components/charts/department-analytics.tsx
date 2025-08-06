@@ -2,22 +2,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Ticket, TrendingUp, TrendingDown, Building2, Users, Clock } from 'lucide-react';
-import { CategoryStats, TechnicianStats } from '@/types/ticket';
+import { CategoryStats, TechnicianStats, DashboardAnalytics } from '@/types/ticket';
 
 interface DepartmentAnalyticsProps {
   departmentStats: CategoryStats[];
   technicianStats: TechnicianStats[];
+  analytics?: DashboardAnalytics | null;
 }
 
-export default function DepartmentAnalytics({ departmentStats, technicianStats }: DepartmentAnalyticsProps) {
-  const totalTickets = departmentStats.reduce((sum, dept) => sum + dept.count, 0);
-  const totalTechnicians = technicianStats.length;
-  const activeTechnicians = technicianStats.filter(tech => tech.totalTickets > 0).length;
+export default function DepartmentAnalytics({ departmentStats, technicianStats, analytics }: DepartmentAnalyticsProps) {
+  const totalTickets = departmentStats?.reduce((sum, dept) => sum + dept.count, 0) || 0;
+  const totalTechnicians = technicianStats?.length || 0;
+  const activeTechnicians = technicianStats?.filter(tech => tech.totalTickets > 0).length || 0;
   
   // Organize departments by volume
-  const sortedDepartments = [...departmentStats]
+  const sortedDepartments = departmentStats ? [...departmentStats]
     .sort((a, b) => b.count - a.count)
-    .slice(0, 8); // Top 8 departments
+    .slice(0, 8) : []; // Top 8 departments
 
   // Calculate department metrics
   const departmentMetrics = sortedDepartments.map(dept => {

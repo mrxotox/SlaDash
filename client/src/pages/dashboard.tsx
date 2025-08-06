@@ -96,6 +96,17 @@ export default function Dashboard() {
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               <span>Filtros aplicados ({Object.keys(filters).length + (isDateFilterActive ? 1 : 0)})</span>
+              {dashboardData?.lastUploadTime && (
+                <span className="ml-4">
+                  - Última actualización: {new Date(dashboardData.lastUploadTime).toLocaleString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              )}
             </div>
           </div>
 
@@ -139,13 +150,29 @@ export default function Dashboard() {
       case 'upload':
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Upload Data
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Import your ticket data from CSV files
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Upload Data
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Import your ticket data from CSV files
+                </p>
+              </div>
+              {dashboardData?.lastUploadTime && (
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>
+                    Última actualización: {new Date(dashboardData.lastUploadTime).toLocaleString('es-ES', {
+                      day: '2-digit',
+                      month: '2-digit', 
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="max-w-2xl">
               <UploadSection />
@@ -348,7 +375,8 @@ export default function Dashboard() {
 
             {/* Second Row: Department Analytics */}
             <DepartmentAnalytics 
-              departmentStats={dashboardData.departmentStats}
+              departmentStats={dashboardData.departmentStats || []}
+              technicianStats={dashboardData.technicianStats || []}
               analytics={dashboardData.analytics}
             />
 
