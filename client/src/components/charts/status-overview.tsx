@@ -16,11 +16,13 @@ import { StatusStats, PriorityStats } from '@/types/ticket';
 interface StatusOverviewProps {
   statusData: StatusStats[];
   priorityData: PriorityStats[];
+  requestTypeData?: StatusStats[];
 }
 
-export default function StatusOverview({ statusData, priorityData }: StatusOverviewProps) {
+export default function StatusOverview({ statusData, priorityData, requestTypeData = [] }: StatusOverviewProps) {
   const totalStatusTickets = statusData.reduce((sum, status) => sum + status.count, 0);
   const totalPriorityTickets = priorityData.reduce((sum, priority) => sum + priority.count, 0);
+  const totalRequestTypeTickets = requestTypeData.reduce((sum, type) => sum + type.count, 0);
 
   // Map status to icons and colors
   const getStatusConfig = (statusName: string) => {

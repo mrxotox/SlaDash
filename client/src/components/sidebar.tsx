@@ -28,11 +28,6 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       icon: Upload,
     },
     {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: TrendingUp,
-    },
-    {
       id: 'technicians',
       label: 'Technicians',
       icon: Users,

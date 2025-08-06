@@ -100,16 +100,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           priorityStats: [],
           technicianStats: [],
           departmentStats: [],
+          requestTypeStats: [],
           message: "No tickets available. Please upload a file to start analyzing your data."
         });
       }
 
       // Calculate real-time statistics
-      const statusStats = calculateStatusStats(tickets);
+      const statusStats = calculateStatusStats(tickets); // Uses status column from Excel
       const categoryStats = calculateCategoryStats(tickets);
-      const priorityStats = calculatePriorityStats(tickets); // Now uses urgency field
+      const priorityStats = calculatePriorityStats(tickets); // Uses urgency field
       const technicianStats = calculateTechnicianStats(tickets);
-      const departmentStats = calculateDepartmentStats(tickets); // New: uses Department column
+      const departmentStats = calculateDepartmentStats(tickets); // Uses Department column
+      const requestTypeStats = calculateRequestTypeStats(tickets); // Uses Request Type column
       
       // Get all tickets (sorted by creation date, newest first)
       const allTickets = tickets
@@ -124,11 +126,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           closedTickets: tickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length
         } : null,
         allTickets, // Changed from recentTickets to allTickets
-        statusStats,
+        statusStats, // Uses status column from Excel
         categoryStats,
         priorityStats, // Now based on urgency field
         technicianStats,
-        departmentStats // New: Department statistics
+        departmentStats, // Uses Department column
+        requestTypeStats // Uses Request Type column
       });
     } catch (error) {
       console.error("Dashboard error:", error);
@@ -546,12 +549,14 @@ function normalizeTechnician(technician: string): string {
     .join(' ');
 }
 
-// Calculate status statistics
+// Calculate status statistics using status column from Excel
 function calculateStatusStats(tickets: any[]) {
   const statusCounts: { [key: string]: number } = {};
   
   tickets.forEach(ticket => {
-    statusCounts[ticket.status] = (statusCounts[ticket.status] || 0) + 1;
+    // Use status field from Excel data, normalize common values
+    const status = ticket.status || 'Sin estado';
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
   
   return Object.entries(statusCounts).map(([name, count]) => ({
@@ -585,6 +590,22 @@ function calculateDepartmentStats(tickets: any[]) {
   });
   
   return Object.entries(departmentCounts).map(([name, count]) => ({
+    name,
+    count
+  }));
+}
+
+// Calculate request type statistics
+function calculateRequestTypeStats(tickets: any[]) {
+  const requestTypeCounts: { [key: string]: number } = {};
+  
+  tickets.forEach(ticket => {
+    // Use requestType field from Excel data
+    const requestType = ticket.requestType || 'No especificado';
+    requestTypeCounts[requestType] = (requestTypeCounts[requestType] || 0) + 1;
+  });
+  
+  return Object.entries(requestTypeCounts).map(([name, count]) => ({
     name,
     count
   }));
@@ -656,8 +677,11 @@ async function calculateAnalytics(tickets: any[]) {
     try {
       const createdTime = new Date(ticket.createdDate).getTime();
       const resolvedTime = new Date(ticket.resolvedTime).getTime();
-      const resolutionTimeHours = (resolvedTime - createdTime) / (1000 * 60 * 60); // in hours
-      return sum + resolutionTimeHours;
+      
+      if (isNaN(createdTime) || isNaN(resolvedTime)) return sum;
+      
+      const resolutionTimeDays = (resolvedTime - createdTime) / (1000 * 60 * 60 * 24); // in days
+      return sum + Math.max(resolutionTimeDays, 0); // Ensure positive values
     } catch (error) {
       return sum; // Skip invalid dates
     }

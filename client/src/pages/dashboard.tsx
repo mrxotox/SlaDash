@@ -78,38 +78,7 @@ export default function Dashboard() {
           </div>
         );
 
-      case 'analytics':
-        return (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  <BarChart3 className="inline-block h-8 w-8 mr-3 text-primary" />
-                  Análisis Departamental
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Distribución detallada por categorías y departamentos
-                </p>
-              </div>
-            </div>
-            
-            <FilterControls
-              onFiltersChange={handleFiltersChange}
-              categoryStats={dashboardData.categoryStats}
-              technicianStats={dashboardData.technicianStats}
-            />
 
-            <DepartmentAnalytics 
-              departmentStats={dashboardData.departmentStats || []}
-              technicianStats={dashboardData.technicianStats}
-            />
-
-            <StatusOverview 
-              statusData={dashboardData.statusStats}
-              priorityData={dashboardData.priorityStats}
-            />
-          </div>
-        );
 
       case 'technicians':
         return (
@@ -179,10 +148,11 @@ export default function Dashboard() {
               priorityStats={dashboardData.priorityStats}
             />
 
-            {/* Status and Priority Overview */}
+            {/* Status, Priority and Request Type Overview */}
             <StatusOverview 
               statusData={dashboardData.statusStats}
               priorityData={dashboardData.priorityStats}
+              requestTypeData={dashboardData.requestTypeStats || []}
             />
 
             {/* SLA Dashboard */}
