@@ -1,86 +1,73 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Save, RotateCcw } from 'lucide-react';
 import { TicketFilters, CategoryStats, TechnicianStats } from '@/types/ticket';
 
-interface AdvancedFiltersProps {
+interface PersistentFiltersProps {
   onFiltersChange: (filters: TicketFilters & { searchTerm?: string }) => void;
   categoryStats: CategoryStats[];
   technicianStats: TechnicianStats[];
   priorityStats: CategoryStats[];
   statusStats: CategoryStats[];
   requestTypeStats: CategoryStats[];
+  currentFilters: TicketFilters & { searchTerm?: string };
 }
 
-export default function AdvancedFilters({ 
+export default function PersistentFilters({ 
   onFiltersChange, 
   categoryStats, 
   technicianStats, 
   priorityStats, 
   statusStats,
-  requestTypeStats
-}: AdvancedFiltersProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState<TicketFilters>({});
-  const [savedFilters, setSavedFilters] = useState<{ name: string; filters: any }[]>([]);
+  requestTypeStats,
+  currentFilters
+}: PersistentFiltersProps) {
+  const [searchTerm, setSearchTerm] = useState(currentFilters.searchTerm || '');
 
-  // Apply filters whenever they change
+  // Use current filters as controlled state
+  const selectedFilters = currentFilters;
+
   useEffect(() => {
-    const filters = { ...selectedFilters };
-    if (searchTerm.trim()) {
-      filters.searchTerm = searchTerm.trim();
-    }
-    
-    // Always notify parent, even if filters are empty (to clear)
-    onFiltersChange(filters);
-  }, [selectedFilters, searchTerm, onFiltersChange]);
+    setSearchTerm(currentFilters.searchTerm || '');
+  }, [currentFilters.searchTerm]);
 
   const handleFilterChange = (key: keyof TicketFilters, value: string | undefined) => {
-    console.log('[AdvancedFilters] Filter change:', key, value);
+    console.log('[PersistentFilters] Filter change:', key, value);
+    const newFilters = { ...currentFilters };
+    
     if (value === 'all' || !value) {
-      const { [key]: removed, ...rest } = selectedFilters;
-      setSelectedFilters(rest);
+      delete newFilters[key];
     } else {
-      setSelectedFilters(prev => ({ ...prev, [key]: value }));
+      newFilters[key] = value;
     }
+    
+    onFiltersChange(newFilters);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    const newFilters = { ...currentFilters };
+    if (value.trim()) {
+      newFilters.searchTerm = value.trim();
+    } else {
+      delete newFilters.searchTerm;
+    }
+    onFiltersChange(newFilters);
   };
 
   const clearAllFilters = () => {
-    setSelectedFilters({});
     setSearchTerm('');
     onFiltersChange({});
   };
 
-  const saveCurrentFilters = () => {
-    if (Object.keys(selectedFilters).length === 0 && !searchTerm) return;
-    
-    const name = `Filtro ${new Date().toLocaleDateString()}`;
-    const newSavedFilter = {
-      name,
-      filters: { ...selectedFilters, searchTerm }
-    };
-    
-    setSavedFilters(prev => [...prev, newSavedFilter]);
-  };
-
-  const applySavedFilter = (filter: any) => {
-    const { searchTerm: savedSearchTerm, ...otherFilters } = filter.filters || {};
-    setSelectedFilters(otherFilters);
-    setSearchTerm(savedSearchTerm || '');
-  };
-
   const getActiveFiltersCount = () => {
-    return Object.keys(selectedFilters).length + (searchTerm ? 1 : 0);
-  };
-
-  const removeFilter = (key: keyof TicketFilters) => {
-    const { [key]: removed, ...rest } = selectedFilters;
-    setSelectedFilters(rest);
+    const filterCount = Object.keys(currentFilters).filter(key => key !== 'searchTerm').length;
+    return filterCount + (currentFilters.searchTerm ? 1 : 0);
   };
 
   return (
@@ -97,27 +84,16 @@ export default function AdvancedFilters({
             )}
           </CardTitle>
           <div className="flex space-x-2">
-            {(Object.keys(selectedFilters).length > 0 || searchTerm) && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={saveCurrentFilters}
-                  className="flex items-center space-x-1"
-                >
-                  <Save className="h-4 w-4" />
-                  <span>Guardar</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearAllFilters}
-                  className="flex items-center space-x-1"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  <span>Limpiar</span>
-                </Button>
-              </>
+            {getActiveFiltersCount() > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                className="flex items-center space-x-1"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span>Limpiar</span>
+              </Button>
             )}
           </div>
         </div>
@@ -132,14 +108,14 @@ export default function AdvancedFilters({
               id="search"
               placeholder="Buscar en título, descripción, ID..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
         </div>
 
         {/* Filter Controls */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {/* Status Filter */}
           <div className="space-y-2">
             <Label>Estado</Label>
@@ -152,7 +128,7 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {statusStats?.length > 0 && statusStats.map((stat) => (
+                {statusStats?.map((stat) => (
                   <SelectItem key={stat.name} value={stat.name}>
                     {stat.name} ({stat.count})
                   </SelectItem>
@@ -173,7 +149,7 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {technicianStats?.length > 0 && technicianStats.map((tech) => (
+                {technicianStats?.map((tech) => (
                   <SelectItem key={tech.name} value={tech.name}>
                     {tech.name} ({tech.totalTickets})
                   </SelectItem>
@@ -194,7 +170,7 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {categoryStats.map((cat) => (
+                {categoryStats?.map((cat) => (
                   <SelectItem key={cat.name} value={cat.name}>
                     {cat.name} ({cat.count})
                   </SelectItem>
@@ -215,9 +191,9 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {priorityStats.map((priority) => (
-                  <SelectItem key={priority.name} value={priority.name}>
-                    {priority.name} ({priority.count})
+                {priorityStats?.map((pri) => (
+                  <SelectItem key={pri.name} value={pri.name}>
+                    {pri.name} ({pri.count})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -236,7 +212,7 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {requestTypeStats.map((type) => (
+                {requestTypeStats?.map((type) => (
                   <SelectItem key={type.name} value={type.name}>
                     {type.name} ({type.count})
                   </SelectItem>
@@ -244,69 +220,32 @@ export default function AdvancedFilters({
               </SelectContent>
             </Select>
           </div>
-
-          {/* Department Filter */}
-          <div className="space-y-2">
-            <Label>Departamento</Label>
-            <Select 
-              value={selectedFilters.department || 'all'} 
-              onValueChange={(value) => handleFilterChange('department', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {/* Add department options if available */}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
-        {/* Active Filters */}
+        {/* Active Filters Display */}
         {getActiveFiltersCount() > 0 && (
-          <div className="space-y-2">
-            <Label>Filtros Activos:</Label>
-            <div className="flex flex-wrap gap-2">
-              {searchTerm && (
-                <Badge variant="outline" className="flex items-center space-x-1">
-                  <span>Búsqueda: "{searchTerm}"</span>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {Object.entries(selectedFilters).map(([key, value]) => {
+              if (key === 'searchTerm' || !value) return null;
+              return (
+                <Badge key={key} variant="secondary" className="flex items-center space-x-1">
+                  <span className="capitalize">{key}: {value}</span>
                   <X 
                     className="h-3 w-3 cursor-pointer" 
-                    onClick={() => setSearchTerm('')}
+                    onClick={() => handleFilterChange(key as keyof TicketFilters, undefined)}
                   />
                 </Badge>
-              )}
-              {Object.entries(selectedFilters).map(([key, value]) => (
-                <Badge key={key} variant="outline" className="flex items-center space-x-1">
-                  <span>{key}: {value}</span>
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => removeFilter(key as keyof TicketFilters)}
-                  />
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Saved Filters */}
-        {savedFilters.length > 0 && (
-          <div className="space-y-2">
-            <Label>Filtros Guardados:</Label>
-            <div className="flex flex-wrap gap-2">
-              {savedFilters.map((filter, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => applySavedFilter(filter)}
-                  className="flex items-center space-x-1"
-                >
-                  <span>{filter.name}</span>
-                </Button>
-              ))}
-            </div>
+              );
+            })}
+            {selectedFilters.searchTerm && (
+              <Badge variant="secondary" className="flex items-center space-x-1">
+                <span>Búsqueda: {selectedFilters.searchTerm}</span>
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => handleSearchChange('')}
+                />
+              </Badge>
+            )}
           </div>
         )}
       </CardContent>

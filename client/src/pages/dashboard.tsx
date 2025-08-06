@@ -6,7 +6,7 @@ import UploadSection from '@/components/upload-section';
 import ModernKPICards from '@/components/modern-kpi-cards';
 import FilterControls from '@/components/filter-controls';
 import DateRangeFilter from '@/components/date-range-filter';
-import AdvancedFilters from '@/components/advanced-filters';
+import PersistentFilters from '@/components/persistent-filters';
 import StatusOverview from '@/components/charts/status-overview';
 import TrendsAnalytics from '@/components/charts/trends-analytics';
 import HeatMapAnalytics from '@/components/charts/heat-map-analytics';
@@ -170,16 +170,17 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <AdvancedFilters
+            <PersistentFilters
               onFiltersChange={handleFiltersChange}
-              categoryStats={dashboardData.categoryStats || []}
-              technicianStats={dashboardData.technicianStats || []}
-              priorityStats={dashboardData.priorityStats || []}
-              statusStats={dashboardData.statusStats || []}
-              requestTypeStats={dashboardData.requestTypeStats || []}
+              categoryStats={dashboardData?.categoryStats || []}
+              technicianStats={dashboardData?.technicianStats || []}
+              priorityStats={dashboardData?.priorityStats || []}
+              statusStats={dashboardData?.statusStats || []}
+              requestTypeStats={dashboardData?.requestTypeStats || []}
+              currentFilters={filters}
             />
 
-            <TrendsAnalytics tickets={dashboardData.allTickets || []} />
+            <TrendsAnalytics tickets={dashboardData?.allTickets || []} />
           </div>
         );
 
@@ -198,13 +199,14 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <AdvancedFilters
+            <PersistentFilters
               onFiltersChange={handleFiltersChange}
-              categoryStats={dashboardData.categoryStats || []}
-              technicianStats={dashboardData.technicianStats || []}
-              priorityStats={dashboardData.priorityStats || []}
-              statusStats={dashboardData.statusStats || []}
-              requestTypeStats={dashboardData.requestTypeStats || []}
+              categoryStats={dashboardData?.categoryStats || []}
+              technicianStats={dashboardData?.technicianStats || []}
+              priorityStats={dashboardData?.priorityStats || []}
+              statusStats={dashboardData?.statusStats || []}
+              requestTypeStats={dashboardData?.requestTypeStats || []}
+              currentFilters={filters}
             />
 
             {dashboardData?.allTickets && (
