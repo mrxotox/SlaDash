@@ -26,7 +26,7 @@ export default function AdvancedFilters({
   requestTypeStats
 }: AdvancedFiltersProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState<TicketFilters & { searchTerm?: string }>({});
+  const [selectedFilters, setSelectedFilters] = useState<TicketFilters>({});
   const [savedFilters, setSavedFilters] = useState<{ name: string; filters: any }[]>([]);
 
   // Apply filters whenever they change
@@ -53,7 +53,6 @@ export default function AdvancedFilters({
   const clearAllFilters = () => {
     setSelectedFilters({});
     setSearchTerm('');
-    // Immediately notify parent to clear filters
     onFiltersChange({});
   };
 
@@ -70,8 +69,9 @@ export default function AdvancedFilters({
   };
 
   const applySavedFilter = (filter: any) => {
-    setSelectedFilters(filter.filters || {});
-    setSearchTerm(filter.filters?.searchTerm || '');
+    const { searchTerm: savedSearchTerm, ...otherFilters } = filter.filters || {};
+    setSelectedFilters(otherFilters);
+    setSearchTerm(savedSearchTerm || '');
   };
 
   const getActiveFiltersCount = () => {
@@ -152,7 +152,7 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {statusStats.map((stat) => (
+                {statusStats?.map((stat) => (
                   <SelectItem key={stat.name} value={stat.name}>
                     {stat.name} ({stat.count})
                   </SelectItem>
@@ -173,7 +173,7 @@ export default function AdvancedFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                {technicianStats.map((tech) => (
+                {technicianStats?.map((tech) => (
                   <SelectItem key={tech.name} value={tech.name}>
                     {tech.name} ({tech.totalTickets})
                   </SelectItem>

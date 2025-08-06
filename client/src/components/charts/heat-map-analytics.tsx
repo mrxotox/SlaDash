@@ -71,6 +71,7 @@ export default function HeatMapAnalytics({ tickets }: HeatMapAnalyticsProps) {
       }
     });
 
+    console.log('[HeatMap] Aging analysis result:', aging);
     return aging;
   };
 

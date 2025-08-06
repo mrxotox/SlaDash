@@ -207,7 +207,9 @@ export default function Dashboard() {
               requestTypeStats={dashboardData.requestTypeStats || []}
             />
 
-            <HeatMapAnalytics tickets={dashboardData?.allTickets || []} />
+            {dashboardData?.allTickets && (
+              <HeatMapAnalytics tickets={dashboardData.allTickets} />
+            )}
           </div>
         );
 
