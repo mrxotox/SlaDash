@@ -6,7 +6,10 @@ import UploadSection from '@/components/upload-section';
 import ModernKPICards from '@/components/modern-kpi-cards';
 import FilterControls from '@/components/filter-controls';
 import DateRangeFilter from '@/components/date-range-filter';
+import AdvancedFilters from '@/components/advanced-filters';
 import StatusOverview from '@/components/charts/status-overview';
+import TrendsAnalytics from '@/components/charts/trends-analytics';
+import HeatMapAnalytics from '@/components/charts/heat-map-analytics';
 import SLADashboard from '@/components/charts/sla-dashboard';
 import DepartmentAnalytics from '@/components/charts/department-analytics';
 import TechnicianPerformance from '@/components/charts/technician-performance';
@@ -15,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, BarChart3, Users, Target, Building2 } from 'lucide-react';
 
 export default function Dashboard() {
-  const [filters, setFilters] = useState<TicketFilters>({});
+  const [filters, setFilters] = useState<TicketFilters & { searchTerm?: string }>({});
   const [activeSection, setActiveSection] = useState('dashboard');
   const [dateRange, setDateRange] = useState<{ startDate: string | null; endDate: string | null }>({
     startDate: null,
@@ -23,11 +26,22 @@ export default function Dashboard() {
   });
 
   const { data: dashboardData, isLoading, refetch } = useQuery<DashboardData>({
-    queryKey: ['/api/dashboard', dateRange.startDate, dateRange.endDate],
+    queryKey: ['/api/dashboard', dateRange.startDate, dateRange.endDate, filters],
     queryFn: async () => {
       const params = new URLSearchParams();
+      
+      // Date range filters
       if (dateRange.startDate) params.append('startDate', dateRange.startDate);
       if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      
+      // Advanced filters
+      if (filters.technician) params.append('technician', filters.technician);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.priority) params.append('priority', filters.priority);
+      if (filters.status) params.append('status', filters.status);
+      if (filters.requestType) params.append('requestType', filters.requestType);
+      if (filters.department) params.append('department', filters.department);
+      if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
       
       const url = `/api/dashboard${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await fetch(url);
@@ -36,7 +50,7 @@ export default function Dashboard() {
     refetchInterval: false,
   });
 
-  const handleFiltersChange = (newFilters: TicketFilters) => {
+  const handleFiltersChange = (newFilters: TicketFilters & { searchTerm?: string }) => {
     setFilters(newFilters);
   };
 
@@ -138,6 +152,62 @@ export default function Dashboard() {
         );
 
 
+
+      case 'trends':
+        return (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <BarChart3 className="inline-block h-8 w-8 mr-3 text-primary" />
+                  Analytics Avanzadas
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Tendencias temporales y análisis de productividad
+                </p>
+              </div>
+            </div>
+            
+            <AdvancedFilters
+              onFiltersChange={handleFiltersChange}
+              categoryStats={dashboardData.categoryStats}
+              technicianStats={dashboardData.technicianStats}
+              priorityStats={dashboardData.priorityStats}
+              statusStats={dashboardData.statusStats}
+              requestTypeStats={dashboardData.requestTypeStats || []}
+            />
+
+            <TrendsAnalytics tickets={dashboardData.allTickets} />
+          </div>
+        );
+
+      case 'heatmap':
+        return (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <BarChart3 className="inline-block h-8 w-8 mr-3 text-primary" />
+                  Visualizaciones Avanzadas
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Mapa de calor y análisis de envejecimiento de tickets
+                </p>
+              </div>
+            </div>
+            
+            <AdvancedFilters
+              onFiltersChange={handleFiltersChange}
+              categoryStats={dashboardData.categoryStats}
+              technicianStats={dashboardData.technicianStats}
+              priorityStats={dashboardData.priorityStats}
+              statusStats={dashboardData.statusStats}
+              requestTypeStats={dashboardData.requestTypeStats || []}
+            />
+
+            <HeatMapAnalytics tickets={dashboardData.allTickets} />
+          </div>
+        );
 
       case 'technicians':
         return (

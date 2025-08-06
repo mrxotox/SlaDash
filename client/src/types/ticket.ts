@@ -72,6 +72,9 @@ export interface TicketFilters {
   category?: string;
   priority?: string;
   status?: string;
+  requestType?: string;
+  department?: string;
+  searchTerm?: string;
   dateRange?: {
     start: Date;
     end: Date;

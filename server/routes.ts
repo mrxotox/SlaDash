@@ -85,10 +85,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get dashboard data
+  // Get dashboard data with advanced filtering support
   app.get("/api/dashboard", async (req, res) => {
     try {
-      const { startDate, endDate } = req.query;
+      const { 
+        startDate, 
+        endDate, 
+        technician, 
+        category, 
+        priority, 
+        status, 
+        requestType, 
+        department, 
+        searchTerm 
+      } = req.query;
+      
       let tickets = await storage.getTickets();
       
       // Apply date range filter if provided
@@ -104,6 +115,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return true;
         });
+      }
+      
+      // Apply additional filters
+      if (tickets && tickets.length > 0) {
+        // Filter by technician
+        if (technician && technician !== 'all') {
+          tickets = tickets.filter(ticket => ticket.technician === technician);
+        }
+        
+        // Filter by category
+        if (category && category !== 'all') {
+          tickets = tickets.filter(ticket => ticket.category === category);
+        }
+        
+        // Filter by priority
+        if (priority && priority !== 'all') {
+          tickets = tickets.filter(ticket => ticket.urgency === priority);
+        }
+        
+        // Filter by status
+        if (status && status !== 'all') {
+          tickets = tickets.filter(ticket => ticket.status === status);
+        }
+        
+        // Filter by request type
+        if (requestType && requestType !== 'all') {
+          tickets = tickets.filter(ticket => ticket.requestType === requestType);
+        }
+        
+        // Filter by department
+        if (department && department !== 'all') {
+          tickets = tickets.filter(ticket => ticket.department === department);
+        }
+        
+        // Filter by search term
+        if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
+          const search = searchTerm.trim().toLowerCase();
+          tickets = tickets.filter(ticket => 
+            (ticket.id && ticket.id.toLowerCase().includes(search)) ||
+            (ticket.requestId && ticket.requestId.toLowerCase().includes(search)) ||
+            (ticket.subject && ticket.subject.toLowerCase().includes(search)) ||
+            (ticket.description && ticket.description.toLowerCase().includes(search)) ||
+            (ticket.technician && ticket.technician.toLowerCase().includes(search)) ||
+            (ticket.category && ticket.category.toLowerCase().includes(search))
+          );
+        }
       }
       
       // Get analytics first, before filtering
@@ -136,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get all tickets (sorted by creation date, newest first)
       const allTickets = tickets
-        .sort((a, b) => new Date(b.createdDate || b.createdAt).getTime() - new Date(a.createdDate || a.createdAt).getTime());
+        .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
 
       res.json({
         analytics: filteredAnalytics ? {
@@ -146,10 +203,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           avgResolutionTime: filteredAnalytics.avgResolutionTime,
           closedTickets: filteredAnalytics.closedTickets
         } : (analytics ? {
-          totalTickets: parseInt(analytics.totalTickets),
-          slaCompliance: parseFloat(analytics.slaCompliance),
-          overdueTickets: parseInt(analytics.overdueTickets),
-          avgResolutionTime: parseFloat(analytics.avgResolutionTime),
+          totalTickets: parseInt(analytics.totalTickets.toString()),
+          slaCompliance: parseFloat(analytics.slaCompliance.toString()),
+          overdueTickets: parseInt(analytics.overdueTickets.toString()),
+          avgResolutionTime: parseFloat(analytics.avgResolutionTime.toString()),
           closedTickets: tickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length
         } : null),
         allTickets, // Changed from recentTickets to allTickets
@@ -173,15 +230,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate SLA report data
       const slaReport = tickets.map(ticket => ({
-        ticketId: ticket.ticketId,
-        title: ticket.title,
-        priority: ticket.priority,
+        ticketId: ticket.requestId,
+        title: ticket.subject,
+        priority: ticket.urgency,
         status: ticket.status,
-        createdAt: ticket.createdAt,
-        resolvedAt: ticket.resolvedAt,
-        technician: ticket.technician,
-        slaTarget: getSLATarget(ticket.priority, ticket.category),
-        slaCompliant: calculateSLACompliance(ticket)
+        createdAt: ticket.createdDate,
+        resolvedAt: ticket.resolvedTime,
+        technician: ticket.technician || 'Unassigned',
+        slaCompliant: ticket.isOverdue === 'true' ? 'Non-Compliant' : 'Compliant'
       }));
 
       res.setHeader('Content-Type', 'application/json');
