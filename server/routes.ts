@@ -94,11 +94,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!tickets.length) {
         return res.json({
           analytics: null,
-          recentTickets: [],
+          allTickets: [],
           statusStats: [],
           categoryStats: [],
           priorityStats: [],
           technicianStats: [],
+          departmentStats: [],
           message: "No tickets available. Please upload a file to start analyzing your data."
         });
       }
@@ -106,27 +107,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate real-time statistics
       const statusStats = calculateStatusStats(tickets);
       const categoryStats = calculateCategoryStats(tickets);
-      const priorityStats = calculatePriorityStats(tickets);
+      const priorityStats = calculatePriorityStats(tickets); // Now uses urgency field
       const technicianStats = calculateTechnicianStats(tickets);
+      const departmentStats = calculateDepartmentStats(tickets); // New: uses Department column
       
-      // Get recent tickets (last 20)
-      const recentTickets = tickets
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 20);
+      // Get all tickets (sorted by creation date, newest first)
+      const allTickets = tickets
+        .sort((a, b) => new Date(b.createdDate || b.createdAt).getTime() - new Date(a.createdDate || a.createdAt).getTime());
 
       res.json({
         analytics: analytics ? {
           totalTickets: parseInt(analytics.totalTickets),
           slaCompliance: parseFloat(analytics.slaCompliance),
           overdueTickets: parseInt(analytics.overdueTickets),
-          avgResolutionTime: parseFloat(analytics.avgResolutionTime),
+          avgResolutionTime: parseFloat(analytics.avgResolutionTime), // Now calculated from Resolved Time and Created Date
           closedTickets: tickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length
         } : null,
-        recentTickets,
+        allTickets, // Changed from recentTickets to allTickets
         statusStats,
         categoryStats,
-        priorityStats,
-        technicianStats
+        priorityStats, // Now based on urgency field
+        technicianStats,
+        departmentStats // New: Department statistics
       });
     } catch (error) {
       console.error("Dashboard error:", error);
@@ -572,15 +574,33 @@ function calculateCategoryStats(tickets: any[]) {
   }));
 }
 
-// Calculate priority statistics
-function calculatePriorityStats(tickets: any[]) {
-  const priorityCounts: { [key: string]: number } = {};
+// Calculate department statistics
+function calculateDepartmentStats(tickets: any[]) {
+  const departmentCounts: { [key: string]: number } = {};
   
   tickets.forEach(ticket => {
-    priorityCounts[ticket.priority] = (priorityCounts[ticket.priority] || 0) + 1;
+    // Use department field from Excel data
+    const department = ticket.department || 'Sin departamento';
+    departmentCounts[department] = (departmentCounts[department] || 0) + 1;
   });
   
-  return Object.entries(priorityCounts).map(([name, count]) => ({
+  return Object.entries(departmentCounts).map(([name, count]) => ({
+    name,
+    count
+  }));
+}
+
+// Calculate priority statistics
+function calculatePriorityStats(tickets: any[]) {
+  const urgencyCounts: { [key: string]: number } = {};
+  
+  tickets.forEach(ticket => {
+    // Use urgency field instead of priority
+    const urgency = ticket.urgency || 'No definida';
+    urgencyCounts[urgency] = (urgencyCounts[urgency] || 0) + 1;
+  });
+  
+  return Object.entries(urgencyCounts).map(([name, count]) => ({
     name,
     count
   }));
@@ -630,11 +650,17 @@ async function calculateAnalytics(tickets: any[]) {
   const slaCompliantTickets = tickets.filter(t => t.isOverdue === false).length;
   const slaCompliance = totalTickets > 0 ? (slaCompliantTickets / totalTickets) * 100 : 0;
   
-  // Calculate average resolution time
-  const resolvedTickets = tickets.filter(t => t.resolvedAt && t.createdAt);
+  // Calculate average resolution time using Resolved Time and Created Date from Excel
+  const resolvedTickets = tickets.filter(t => t.resolvedTime && t.createdDate);
   const totalResolutionTime = resolvedTickets.reduce((sum, ticket) => {
-    const resolutionTime = (new Date(ticket.resolvedAt).getTime() - new Date(ticket.createdAt).getTime()) / (1000 * 60 * 60 * 24);
-    return sum + resolutionTime;
+    try {
+      const createdTime = new Date(ticket.createdDate).getTime();
+      const resolvedTime = new Date(ticket.resolvedTime).getTime();
+      const resolutionTimeHours = (resolvedTime - createdTime) / (1000 * 60 * 60); // in hours
+      return sum + resolutionTimeHours;
+    } catch (error) {
+      return sum; // Skip invalid dates
+    }
   }, 0);
   
   const avgResolutionTime = resolvedTickets.length > 0 ? totalResolutionTime / resolvedTickets.length : 0;

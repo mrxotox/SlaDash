@@ -61,7 +61,8 @@ export interface DashboardData {
   categoryStats: CategoryStats[];
   priorityStats: PriorityStats[];
   statusStats: StatusStats[];
-  recentTickets: Ticket[];
+  departmentStats: CategoryStats[];
+  allTickets: Ticket[];
   message?: string;
 }
 

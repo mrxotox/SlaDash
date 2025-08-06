@@ -5,17 +5,17 @@ import { Ticket, TrendingUp, TrendingDown, Building2, Users, Clock } from 'lucid
 import { CategoryStats, TechnicianStats } from '@/types/ticket';
 
 interface DepartmentAnalyticsProps {
-  categoryStats: CategoryStats[];
+  departmentStats: CategoryStats[];
   technicianStats: TechnicianStats[];
 }
 
-export default function DepartmentAnalytics({ categoryStats, technicianStats }: DepartmentAnalyticsProps) {
-  const totalTickets = categoryStats.reduce((sum, cat) => sum + cat.count, 0);
+export default function DepartmentAnalytics({ departmentStats, technicianStats }: DepartmentAnalyticsProps) {
+  const totalTickets = departmentStats.reduce((sum, dept) => sum + dept.count, 0);
   const totalTechnicians = technicianStats.length;
   const activeTechnicians = technicianStats.filter(tech => tech.totalTickets > 0).length;
   
   // Organize departments by volume
-  const sortedDepartments = [...categoryStats]
+  const sortedDepartments = [...departmentStats]
     .sort((a, b) => b.count - a.count)
     .slice(0, 8); // Top 8 departments
 

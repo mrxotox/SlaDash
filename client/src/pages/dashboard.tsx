@@ -9,7 +9,7 @@ import StatusOverview from '@/components/charts/status-overview';
 import SLADashboard from '@/components/charts/sla-dashboard';
 import DepartmentAnalytics from '@/components/charts/department-analytics';
 import TechnicianPerformance from '@/components/charts/technician-performance';
-import RecentTickets from '@/components/recent-tickets';
+import AllTickets from '@/components/all-tickets';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, BarChart3, Users, Target, Building2 } from 'lucide-react';
 
@@ -100,7 +100,7 @@ export default function Dashboard() {
             />
 
             <DepartmentAnalytics 
-              categoryStats={dashboardData.categoryStats}
+              departmentStats={dashboardData.departmentStats || []}
               technicianStats={dashboardData.technicianStats}
             />
 
@@ -191,8 +191,8 @@ export default function Dashboard() {
               technicianStats={dashboardData.technicianStats}
             />
 
-            {/* Recent Tickets */}
-            <RecentTickets tickets={dashboardData.recentTickets} />
+            {/* All Tickets */}
+            <AllTickets tickets={dashboardData.allTickets} />
           </div>
         );
     }
