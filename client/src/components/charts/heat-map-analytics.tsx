@@ -24,11 +24,17 @@ export default function HeatMapAnalytics({ tickets }: HeatMapAnalyticsProps) {
     tickets.forEach(ticket => {
       if (!ticket.createdDate) return;
       
-      const date = new Date(ticket.createdDate);
-      const day = days[date.getDay()];
-      const hour = date.getHours();
-      
-      heatMap[`${day}-${hour}`]++;
+      try {
+        const date = new Date(ticket.createdDate);
+        if (isNaN(date.getTime())) return;
+        
+        const day = days[date.getDay()];
+        const hour = date.getHours();
+        
+        heatMap[`${day}-${hour}`]++;
+      } catch (error) {
+        console.warn('Invalid created date:', ticket.createdDate);
+      }
     });
 
     return { heatMap, days, hours };
@@ -48,14 +54,20 @@ export default function HeatMapAnalytics({ tickets }: HeatMapAnalyticsProps) {
     tickets.filter(t => !t.resolvedTime).forEach(ticket => {
       if (!ticket.createdDate) return;
       
-      const created = new Date(ticket.createdDate);
-      const daysOld = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
-      
-      if (daysOld > 30) aging.veryOld++;
-      else if (daysOld > 15) aging.old++;
-      else if (daysOld > 7) aging.medium++;
-      else if (daysOld > 1) aging.recent++;
-      else aging.today++;
+      try {
+        const created = new Date(ticket.createdDate);
+        if (isNaN(created.getTime())) return;
+        
+        const daysOld = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (daysOld > 30) aging.veryOld++;
+        else if (daysOld > 15) aging.old++;
+        else if (daysOld > 7) aging.medium++;
+        else if (daysOld > 1) aging.recent++;
+        else aging.today++;
+      } catch (error) {
+        console.warn('Invalid created date:', ticket.createdDate);
+      }
     });
 
     return aging;

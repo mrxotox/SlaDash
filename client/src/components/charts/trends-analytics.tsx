@@ -28,12 +28,21 @@ export default function TrendsAnalytics({ tickets }: TrendsAnalyticsProps) {
       
       // Check if resolved in the same week
       if (ticket.resolvedTime) {
-        const resolvedDate = new Date(ticket.resolvedTime);
-        const resolvedWeekStart = new Date(resolvedDate.getFullYear(), resolvedDate.getMonth(), resolvedDate.getDate() - resolvedDate.getDay());
-        const resolvedWeekKey = resolvedWeekStart.toISOString().split('T')[0];
-        
-        if (resolvedWeekKey === weekKey) {
-          weeks[weekKey].resolved++;
+        try {
+          const resolvedDate = new Date(ticket.resolvedTime);
+          if (!isNaN(resolvedDate.getTime())) {
+            const resolvedWeekStart = new Date(resolvedDate.getFullYear(), resolvedDate.getMonth(), resolvedDate.getDate() - resolvedDate.getDay());
+            if (!isNaN(resolvedWeekStart.getTime())) {
+              const resolvedWeekKey = resolvedWeekStart.toISOString().split('T')[0];
+              
+              if (resolvedWeekKey === weekKey) {
+                weeks[weekKey].resolved++;
+              }
+            }
+          }
+        } catch (error) {
+          // Skip invalid resolved time
+          console.warn('Invalid resolved time:', ticket.resolvedTime);
         }
       }
     });
