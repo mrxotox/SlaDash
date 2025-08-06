@@ -44,6 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalTickets: analyticsResult.totalTickets,
         slaCompliance: analyticsResult.slaCompliance.toString(),
         overdueTickets: analyticsResult.overdueTickets,
+        closedTickets: analyticsResult.closedTickets,
         avgResolutionTime: analyticsResult.avgResolutionTime.toString()
       };
       await storage.saveAnalytics(analytics);
@@ -594,28 +595,26 @@ function calculateTechnicianStats(tickets: any[]) {
       technicianData[ticket.technician] = {
         name: ticket.technician,
         totalTickets: 0,
-        resolvedTickets: 0,
-        slaCompliant: 0,
-        avgResolutionTime: 0
+        onTimeTickets: 0,
+        overdueTickets: 0,
+        slaCompliance: 0
       };
     }
     
     const tech = technicianData[ticket.technician];
     tech.totalTickets++;
     
-    if (ticket.status === 'Cerrado' || ticket.status === 'Closed') {
-      tech.resolvedTickets++;
-      
-      if (calculateSLACompliance(ticket)) {
-        tech.slaCompliant++;
-      }
-      
-      // Calculate resolution time if available
-      if (ticket.resolvedAt && ticket.createdAt) {
-        const resolutionTime = (new Date(ticket.resolvedAt).getTime() - new Date(ticket.createdAt).getTime()) / (1000 * 60 * 60 * 24); // in days
-        tech.avgResolutionTime = ((tech.avgResolutionTime * (tech.resolvedTickets - 1)) + resolutionTime) / tech.resolvedTickets;
-      }
+    // Use isOverdue column from Excel - if isOverdue=true then SLA is NOT compliant
+    if (ticket.isOverdue === true) {
+      tech.overdueTickets++;
+    } else if (ticket.isOverdue === false) {
+      tech.onTimeTickets++;
     }
+  });
+  
+  // Calculate SLA compliance percentage for each technician
+  Object.values(technicianData).forEach((tech: any) => {
+    tech.slaCompliance = tech.totalTickets > 0 ? (tech.onTimeTickets / tech.totalTickets) * 100 : 0;
   });
   
   return Object.values(technicianData);
@@ -625,10 +624,10 @@ function calculateTechnicianStats(tickets: any[]) {
 async function calculateAnalytics(tickets: any[]) {
   const totalTickets = tickets.length;
   const closedTickets = tickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length;
-  const overdueTickets = tickets.filter(t => isTicketOverdue(t)).length;
   
-  // Calculate SLA compliance
-  const slaCompliantTickets = tickets.filter(t => calculateSLACompliance(t)).length;
+  // Use isOverdue column from Excel data - if isOverdue=true then SLA is NOT compliant
+  const overdueTickets = tickets.filter(t => t.isOverdue === true).length;
+  const slaCompliantTickets = tickets.filter(t => t.isOverdue === false).length;
   const slaCompliance = totalTickets > 0 ? (slaCompliantTickets / totalTickets) * 100 : 0;
   
   // Calculate average resolution time
@@ -644,6 +643,7 @@ async function calculateAnalytics(tickets: any[]) {
     totalTickets,
     slaCompliance,
     overdueTickets,
+    closedTickets,
     avgResolutionTime
   };
 }
