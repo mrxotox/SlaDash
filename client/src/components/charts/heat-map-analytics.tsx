@@ -8,6 +8,7 @@ interface HeatMapAnalyticsProps {
 }
 
 export default function HeatMapAnalytics({ tickets }: HeatMapAnalyticsProps) {
+  console.log('[HeatMap] Received tickets:', tickets?.length || 0);
   // Generate hour-day heatmap data
   const getHeatMapData = () => {
     const heatMap: { [key: string]: number } = {};

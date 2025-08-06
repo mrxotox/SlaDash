@@ -51,6 +51,7 @@ export default function Dashboard() {
   });
 
   const handleFiltersChange = (newFilters: TicketFilters & { searchTerm?: string }) => {
+    console.log('[Dashboard] Filters changed:', newFilters);
     setFilters(newFilters);
   };
 
@@ -206,7 +207,7 @@ export default function Dashboard() {
               requestTypeStats={dashboardData.requestTypeStats || []}
             />
 
-            <HeatMapAnalytics tickets={dashboardData.allTickets || []} />
+            <HeatMapAnalytics tickets={dashboardData?.allTickets || []} />
           </div>
         );
 

@@ -31,25 +31,17 @@ export default function AdvancedFilters({
 
   // Apply filters whenever they change
   useEffect(() => {
-    // For non-search filters, apply immediately
-    if (Object.keys(selectedFilters).length > 0 && !searchTerm) {
-      onFiltersChange(selectedFilters);
-      return;
+    const filters = { ...selectedFilters };
+    if (searchTerm.trim()) {
+      filters.searchTerm = searchTerm.trim();
     }
     
-    // For search, use debounce
-    const timeoutId = setTimeout(() => {
-      const filters = { ...selectedFilters };
-      if (searchTerm.trim()) {
-        filters.searchTerm = searchTerm.trim();
-      }
-      onFiltersChange(filters);
-    }, searchTerm ? 300 : 0); // No debounce for non-search filters
-    
-    return () => clearTimeout(timeoutId);
+    // Always notify parent, even if filters are empty (to clear)
+    onFiltersChange(filters);
   }, [selectedFilters, searchTerm, onFiltersChange]);
 
   const handleFilterChange = (key: keyof TicketFilters, value: string | undefined) => {
+    console.log('[AdvancedFilters] Filter change:', key, value);
     if (value === 'all' || !value) {
       const { [key]: removed, ...rest } = selectedFilters;
       setSelectedFilters(rest);

@@ -1,0 +1,15 @@
+Debug: Problema con filtros en visualizaciones
+
+CONFIRMADO:
+- Backend funciona: 1397 -> 361 tickets con filtro técnico
+- URL: http://localhost:5000/api/dashboard?technician=Gelson%20Munoz
+
+PROBLEMA:
+- Frontend en sección visualizaciones no muestra cambios
+- Filtros se borran visualmente
+- HeatMap no recibe datos filtrados
+
+SOLUCION:
+1. Simplificar useEffect en advanced-filters
+2. Verificar que HeatMapAnalytics reciba datos correctos
+3. Agregar logs para debugging
