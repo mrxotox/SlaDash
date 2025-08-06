@@ -31,11 +31,22 @@ export default function AdvancedFilters({
 
   // Apply filters whenever they change
   useEffect(() => {
-    const filters = { ...selectedFilters };
-    if (searchTerm.trim()) {
-      filters.searchTerm = searchTerm.trim();
+    // For non-search filters, apply immediately
+    if (Object.keys(selectedFilters).length > 0 && !searchTerm) {
+      onFiltersChange(selectedFilters);
+      return;
     }
-    onFiltersChange(filters);
+    
+    // For search, use debounce
+    const timeoutId = setTimeout(() => {
+      const filters = { ...selectedFilters };
+      if (searchTerm.trim()) {
+        filters.searchTerm = searchTerm.trim();
+      }
+      onFiltersChange(filters);
+    }, searchTerm ? 300 : 0); // No debounce for non-search filters
+    
+    return () => clearTimeout(timeoutId);
   }, [selectedFilters, searchTerm, onFiltersChange]);
 
   const handleFilterChange = (key: keyof TicketFilters, value: string | undefined) => {
@@ -50,6 +61,8 @@ export default function AdvancedFilters({
   const clearAllFilters = () => {
     setSelectedFilters({});
     setSearchTerm('');
+    // Immediately notify parent to clear filters
+    onFiltersChange({});
   };
 
   const saveCurrentFilters = () => {

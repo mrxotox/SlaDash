@@ -26,7 +26,7 @@ export default function Dashboard() {
   });
 
   const { data: dashboardData, isLoading, refetch } = useQuery<DashboardData>({
-    queryKey: ['/api/dashboard', dateRange.startDate, dateRange.endDate, filters],
+    queryKey: ['/api/dashboard', dateRange.startDate, dateRange.endDate, filters.technician, filters.category, filters.priority, filters.status, filters.requestType, filters.department, filters.searchTerm],
     queryFn: async () => {
       const params = new URLSearchParams();
       

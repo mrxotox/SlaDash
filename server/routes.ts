@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: ticket.createdDate,
         resolvedAt: ticket.resolvedTime,
         technician: ticket.technician || 'Unassigned',
-        slaCompliant: ticket.isOverdue === 'true' ? 'Non-Compliant' : 'Compliant'
+        slaCompliant: ticket.isOverdue === true ? 'Non-Compliant' : 'Compliant'
       }));
 
       res.setHeader('Content-Type', 'application/json');
