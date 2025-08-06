@@ -24,11 +24,6 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       icon: BarChart3,
     },
     {
-      id: 'upload',
-      label: 'Upload Data',
-      icon: Upload,
-    },
-    {
       id: 'trends',
       label: 'Analytics Avanzadas',
       icon: TrendingUp,
@@ -57,6 +52,11 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       id: 'export',
       label: 'Export',
       icon: FileText,
+    },
+    {
+      id: 'upload',
+      label: 'Upload Data',
+      icon: Upload,
     },
   ]
 

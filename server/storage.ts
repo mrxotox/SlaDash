@@ -15,6 +15,10 @@ export interface IStorage {
   // Analytics methods
   saveAnalytics(analytics: InsertTicketAnalytics): Promise<TicketAnalytics>;
   getAnalytics(): Promise<TicketAnalytics | undefined>;
+  
+  // Data upload timestamp
+  setLastUploadTime(timestamp: Date): Promise<void>;
+  getLastUploadTime(): Promise<Date | null>;
 }
 
 export interface TicketFilters {
@@ -32,6 +36,7 @@ export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private tickets: Map<string, Ticket>;
   private analytics: TicketAnalytics | undefined;
+  private lastUploadTime: Date | null = null;
 
   constructor() {
     this.users = new Map();
@@ -141,6 +146,14 @@ export class MemStorage implements IStorage {
 
   async getAnalytics(): Promise<TicketAnalytics | undefined> {
     return this.analytics;
+  }
+
+  async setLastUploadTime(timestamp: Date): Promise<void> {
+    this.lastUploadTime = timestamp;
+  }
+
+  async getLastUploadTime(): Promise<Date | null> {
+    return this.lastUploadTime;
   }
 }
 

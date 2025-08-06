@@ -38,6 +38,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteAllTickets();
       const savedTickets = await storage.createTickets(tickets);
       
+      // Set the upload timestamp
+      await storage.setLastUploadTime(new Date());
+      
       // Calculate and save analytics
       const analyticsResult = await calculateAnalytics(savedTickets);
       const analytics = {
@@ -163,8 +166,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Get analytics first, before filtering
+      // Get analytics and last upload time
       const analytics = await storage.getAnalytics();
+      const lastUploadTime = await storage.getLastUploadTime();
       
       if (!tickets.length) {
         return res.json({
@@ -215,7 +219,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priorityStats, // Now based on urgency field
         technicianStats,
         departmentStats, // Uses Department column
-        requestTypeStats // Uses Request Type column
+        requestTypeStats, // Uses Request Type column
+        lastUploadTime
       });
     } catch (error) {
       console.error("Dashboard error:", error);

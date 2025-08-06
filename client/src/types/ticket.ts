@@ -64,6 +64,7 @@ export interface DashboardData {
   departmentStats: CategoryStats[];
   requestTypeStats: CategoryStats[];
   allTickets: Ticket[];
+  lastUploadTime: string | null;
   message?: string;
 }
 

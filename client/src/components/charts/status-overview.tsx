@@ -162,38 +162,24 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
             Distribución actual por estado ({totalStatusTickets} tickets)
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {processedStatus.map((status, index) => {
             const StatusIcon = status.icon;
             
             return (
-              <div key={index} className="p-4 rounded-lg border">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${status.bg}`}>
-                      <StatusIcon className={`h-4 w-4 ${status.color}`} />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-sm">{status.label}</h4>
-                      <p className="text-xs text-muted-foreground">{status.name}</p>
-                    </div>
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-lg ${status.bg}`}>
+                    <StatusIcon className={`h-4 w-4 ${status.color}`} />
                   </div>
-                  <div className="text-right">
-                    <p className={`text-xl font-bold ${status.color}`}>{status.count}</p>
-                    <p className="text-xs text-muted-foreground">{status.percentage.toFixed(1)}%</p>
+                  <div>
+                    <h4 className="font-semibold text-sm">{status.label}</h4>
+                    <p className="text-xs text-muted-foreground">{status.name}</p>
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <Progress value={status.percentage} className="h-2" />
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      {status.priority === 'high' ? '🔴 Requiere atención' : 
-                       status.priority === 'medium' ? '🟡 En proceso' : 
-                       '🟢 Completado'}
-                    </span>
-                    <span className="font-medium">{status.count} tickets</span>
-                  </div>
+                <div className="text-right">
+                  <p className={`text-xl font-bold ${status.color}`}>{status.count}</p>
+                  <p className="text-xs text-muted-foreground">{status.percentage.toFixed(1)}%</p>
                 </div>
               </div>
             );
@@ -212,36 +198,24 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
             Distribución por nivel de prioridad ({totalPriorityTickets} tickets)
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {processedPriority.map((priority, index) => (
-            <div key={index} className="p-4 rounded-lg border">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-4 h-4 rounded-full ${priority.bg}`}></div>
-                  <div>
-                    <h4 className="font-semibold text-sm">{priority.label}</h4>
-                    <p className="text-xs text-muted-foreground">{priority.name}</p>
-                  </div>
+            <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className={`w-4 h-4 rounded-full ${priority.bg}`}></div>
+                <div>
+                  <h4 className="font-semibold text-sm">{priority.label}</h4>
+                  <p className="text-xs text-muted-foreground">{priority.name}</p>
                 </div>
-                <div className="text-right">
+              </div>
+              <div className="text-right flex items-center space-x-2">
+                <div>
                   <p className={`text-xl font-bold ${priority.color}`}>{priority.count}</p>
                   <p className="text-xs text-muted-foreground">{priority.percentage.toFixed(1)}%</p>
                 </div>
-              </div>
-              
-              <div className="space-y-1">
-                <Progress value={priority.percentage} className="h-2" />
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">
-                    {priority.level >= 4 ? '⚠️ Atención inmediata' :
-                     priority.level >= 3 ? '🔶 Alta prioridad' :
-                     priority.level >= 2 ? '🔸 Prioridad normal' :
-                     '🔹 Baja prioridad'}
-                  </span>
-                  <Badge variant={priority.level >= 3 ? 'destructive' : 'outline'}>
-                    Nivel {priority.level}
-                  </Badge>
-                </div>
+                <Badge variant={priority.level >= 3 ? 'destructive' : 'outline'} className="text-xs">
+                  Nivel {priority.level}
+                </Badge>
               </div>
             </div>
           ))}
@@ -260,30 +234,19 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
               Distribución por tipo de solicitud ({totalRequestTypeTickets} tickets)
             </p>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {processedRequestType.map((type, index) => (
-              <div key={index} className="p-4 rounded-lg border">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-4 h-4 rounded-full ${type.bg}`}></div>
-                    <div>
-                      <h4 className="font-semibold text-sm">{type.name}</h4>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-xl font-bold ${type.color}`}>{type.count}</p>
-                    <p className="text-xs text-muted-foreground">{type.percentage.toFixed(1)}%</p>
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-4 h-4 rounded-full ${type.bg}`}></div>
+                  <div>
+                    <h4 className="font-semibold text-sm">{type.name}</h4>
+                    <p className="text-xs text-muted-foreground">📋 Solicitud de servicio</p>
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <Progress value={type.percentage} className="h-2" />
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      📋 Solicitud de servicio
-                    </span>
-                    <span className="font-medium">{type.count} tickets</span>
-                  </div>
+                <div className="text-right">
+                  <p className={`text-xl font-bold ${type.color}`}>{type.count}</p>
+                  <p className="text-xs text-muted-foreground">{type.percentage.toFixed(1)}%</p>
                 </div>
               </div>
             ))}

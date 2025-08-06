@@ -301,7 +301,20 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Datos actualizados</span>
+                <span>
+                  Datos actualizados
+                  {dashboardData?.lastUploadTime && (
+                    <span className="ml-1">
+                      - {new Date(dashboardData.lastUploadTime).toLocaleString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  )}
+                </span>
               </div>
             </div>
 
@@ -319,17 +332,24 @@ export default function Dashboard() {
               priorityStats={dashboardData.priorityStats}
             />
 
-            {/* Status, Priority and Request Type Overview */}
-            <StatusOverview 
-              statusData={dashboardData.statusStats}
-              priorityData={dashboardData.priorityStats}
-              requestTypeData={dashboardData.requestTypeStats || []}
-            />
+            {/* First Row: Status, Priority and Request Type Overview + SLA Dashboard */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <StatusOverview 
+                statusData={dashboardData.statusStats}
+                priorityData={dashboardData.priorityStats}
+                requestTypeData={dashboardData.requestTypeStats || []}
+              />
+              
+              <SLADashboard 
+                analytics={dashboardData.analytics}
+                technicianStats={dashboardData.technicianStats}
+              />
+            </div>
 
-            {/* SLA Dashboard */}
-            <SLADashboard 
+            {/* Second Row: Department Analytics */}
+            <DepartmentAnalytics 
+              departmentStats={dashboardData.departmentStats}
               analytics={dashboardData.analytics}
-              technicianStats={dashboardData.technicianStats}
             />
 
 
