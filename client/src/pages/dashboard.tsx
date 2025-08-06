@@ -5,6 +5,7 @@ import Sidebar from '@/components/sidebar';
 import UploadSection from '@/components/upload-section';
 import ModernKPICards from '@/components/modern-kpi-cards';
 import FilterControls from '@/components/filter-controls';
+import DateRangeFilter from '@/components/date-range-filter';
 import StatusOverview from '@/components/charts/status-overview';
 import SLADashboard from '@/components/charts/sla-dashboard';
 import DepartmentAnalytics from '@/components/charts/department-analytics';
@@ -16,15 +17,34 @@ import { AlertCircle, BarChart3, Users, Target, Building2 } from 'lucide-react';
 export default function Dashboard() {
   const [filters, setFilters] = useState<TicketFilters>({});
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [dateRange, setDateRange] = useState<{ startDate: string | null; endDate: string | null }>({
+    startDate: null,
+    endDate: null
+  });
 
   const { data: dashboardData, isLoading, refetch } = useQuery<DashboardData>({
-    queryKey: ['/api/dashboard'],
+    queryKey: ['/api/dashboard', dateRange.startDate, dateRange.endDate],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      
+      const url = `/api/dashboard${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
+      return response.json();
+    },
     refetchInterval: false,
   });
 
   const handleFiltersChange = (newFilters: TicketFilters) => {
     setFilters(newFilters);
   };
+
+  const handleDateRangeChange = (startDate: string | null, endDate: string | null) => {
+    setDateRange({ startDate, endDate });
+  };
+
+  const isDateFilterActive = dateRange.startDate !== null || dateRange.endDate !== null;
 
   if (isLoading) {
     return (
@@ -139,6 +159,12 @@ export default function Dashboard() {
                 <span>Datos actualizados</span>
               </div>
             </div>
+
+            {/* Date Range Filter */}
+            <DateRangeFilter 
+              onDateRangeChange={handleDateRangeChange}
+              isActive={isDateFilterActive}
+            />
 
             {/* Modern KPI Cards */}
             <ModernKPICards 

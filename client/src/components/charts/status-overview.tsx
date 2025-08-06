@@ -140,8 +140,17 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
     }))
     .sort((a, b) => b.level - a.level);
 
+  const processedRequestType = requestTypeData
+    .map(type => ({
+      ...type,
+      percentage: totalRequestTypeTickets > 0 ? (type.count / totalRequestTypeTickets) * 100 : 0,
+      color: 'text-purple-600',
+      bg: 'bg-purple-50 dark:bg-purple-950/20'
+    }))
+    .sort((a, b) => b.count - a.count);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Status Overview */}
       <Card>
         <CardHeader>
@@ -238,6 +247,49 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
           ))}
         </CardContent>
       </Card>
+
+      {/* Request Type Overview */}
+      {requestTypeData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              <span>Tipos de Requerimientos</span>
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Distribución por tipo de solicitud ({totalRequestTypeTickets} tickets)
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {processedRequestType.map((type, index) => (
+              <div key={index} className="p-4 rounded-lg border">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-4 h-4 rounded-full ${type.bg}`}></div>
+                    <div>
+                      <h4 className="font-semibold text-sm">{type.name}</h4>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-xl font-bold ${type.color}`}>{type.count}</p>
+                    <p className="text-xs text-muted-foreground">{type.percentage.toFixed(1)}%</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <Progress value={type.percentage} className="h-2" />
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      📋 Solicitud de servicio
+                    </span>
+                    <span className="font-medium">{type.count} tickets</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

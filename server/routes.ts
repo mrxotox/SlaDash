@@ -88,7 +88,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get dashboard data
   app.get("/api/dashboard", async (req, res) => {
     try {
-      const tickets = await storage.getTickets();
+      const { startDate, endDate } = req.query;
+      let tickets = await storage.getTickets();
+      
+      // Apply date range filter if provided
+      if (startDate || endDate) {
+        tickets = tickets.filter(ticket => {
+          if (!ticket.createdDate) return false;
+          
+          const ticketDate = new Date(ticket.createdDate);
+          if (isNaN(ticketDate.getTime())) return false;
+          
+          if (startDate && ticketDate < new Date(startDate as string)) return false;
+          if (endDate && ticketDate > new Date(endDate as string + 'T23:59:59')) return false;
+          
+          return true;
+        });
+      }
       const analytics = await storage.getAnalytics();
       
       if (!tickets.length) {
