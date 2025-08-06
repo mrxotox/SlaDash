@@ -43,54 +43,8 @@ export default function DateRangeFilter({ onDateRangeChange, isActive }: DateRan
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div className="space-y-2">
-            <Label htmlFor="start-date">Fecha Inicio</Label>
-            <Input
-              id="start-date"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              max={endDate || today}
-              className="w-full"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="end-date">Fecha Fin</Label>
-            <Input
-              id="end-date"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={startDate}
-              max={today}
-              className="w-full"
-            />
-          </div>
-          
-          <div className="flex space-x-2">
-            <Button 
-              onClick={handleApplyFilter}
-              className="flex items-center space-x-1"
-              disabled={!startDate && !endDate}
-            >
-              <Filter className="h-4 w-4" />
-              <span>Aplicar</span>
-            </Button>
-            
-            <Button 
-              variant="outline"
-              onClick={handleClearFilter}
-              className="flex items-center space-x-1"
-              disabled={!isActive}
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span>Limpiar</span>
-            </Button>
-          </div>
-          
-          <div className="text-sm text-muted-foreground">
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground mb-4">
             {isActive ? (
               <div>
                 <p className="font-medium">Filtro activo:</p>
@@ -101,6 +55,54 @@ export default function DateRangeFilter({ onDateRangeChange, isActive }: DateRan
             ) : (
               <p>Sin filtro aplicado</p>
             )}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="space-y-2">
+              <Label htmlFor="start-date">Fecha Inicio</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                max={endDate || today}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="end-date">Fecha Fin</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
+                max={today}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button 
+                onClick={handleApplyFilter}
+                className="flex items-center space-x-1"
+                disabled={!startDate && !endDate}
+              >
+                <Filter className="h-4 w-4" />
+                <span>Aplicar</span>
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={handleClearFilter}
+                className="flex items-center space-x-1"
+                disabled={!isActive}
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span>Limpiar</span>
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
