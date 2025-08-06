@@ -63,6 +63,45 @@ export default function Dashboard() {
   }
 
   const renderContent = () => {
+    // If no data but date filter is active, show no results message instead of upload
+    if (!dashboardData?.analytics && isDateFilterActive) {
+      return (
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                Mesa de Ayuda TI - Dashboard
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Monitoreo en tiempo real del rendimiento y cumplimiento SLA
+              </p>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <span>Filtro aplicado</span>
+            </div>
+          </div>
+
+          {/* Date Range Filter */}
+          <DateRangeFilter 
+            onDateRangeChange={handleDateRangeChange}
+            isActive={isDateFilterActive}
+          />
+
+          <div className="text-center py-12">
+            <AlertCircle className="mx-auto h-12 w-12 text-yellow-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              No hay tickets en el rango de fechas seleccionado
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Intenta ajustar el rango de fechas o limpiar el filtro para ver todos los tickets.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    
     if (!dashboardData?.analytics) {
       return (
         <div className="text-center py-12">

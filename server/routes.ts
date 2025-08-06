@@ -105,6 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return true;
         });
       }
+      
+      // Get analytics first, before filtering
       const analytics = await storage.getAnalytics();
       
       if (!tickets.length) {
@@ -121,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Calculate real-time statistics
+      // Calculate real-time statistics on filtered tickets
       const statusStats = calculateStatusStats(tickets); // Uses status column from Excel
       const categoryStats = calculateCategoryStats(tickets);
       const priorityStats = calculatePriorityStats(tickets); // Uses urgency field
@@ -129,18 +131,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const departmentStats = calculateDepartmentStats(tickets); // Uses Department column
       const requestTypeStats = calculateRequestTypeStats(tickets); // Uses Request Type column
       
+      // Recalculate analytics for filtered data
+      const filteredAnalytics = tickets.length > 0 ? await calculateAnalytics(tickets) : null;
+      
       // Get all tickets (sorted by creation date, newest first)
       const allTickets = tickets
         .sort((a, b) => new Date(b.createdDate || b.createdAt).getTime() - new Date(a.createdDate || a.createdAt).getTime());
 
       res.json({
-        analytics: analytics ? {
+        analytics: filteredAnalytics ? {
+          totalTickets: filteredAnalytics.totalTickets,
+          slaCompliance: filteredAnalytics.slaCompliance,
+          overdueTickets: filteredAnalytics.overdueTickets,
+          avgResolutionTime: filteredAnalytics.avgResolutionTime,
+          closedTickets: filteredAnalytics.closedTickets
+        } : (analytics ? {
           totalTickets: parseInt(analytics.totalTickets),
           slaCompliance: parseFloat(analytics.slaCompliance),
           overdueTickets: parseInt(analytics.overdueTickets),
-          avgResolutionTime: parseFloat(analytics.avgResolutionTime), // Now calculated from Resolved Time and Created Date
+          avgResolutionTime: parseFloat(analytics.avgResolutionTime),
           closedTickets: tickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length
-        } : null,
+        } : null),
         allTickets, // Changed from recentTickets to allTickets
         statusStats, // Uses status column from Excel
         categoryStats,
