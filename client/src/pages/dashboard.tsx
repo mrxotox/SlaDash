@@ -351,7 +351,7 @@ export default function Dashboard() {
               isActive={isDateFilterActive}
             />
 
-            {/* Modern KPI Cards */}
+            {/* KPI Cards */}
             <ModernKPICards 
               analytics={dashboardData.analytics}
               technicianStats={dashboardData.technicianStats}
@@ -359,26 +359,26 @@ export default function Dashboard() {
               priorityStats={dashboardData.priorityStats}
             />
 
-            {/* First Row: Status, Priority and Request Type Overview + SLA Dashboard */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              <StatusOverview 
-                statusData={dashboardData.statusStats}
-                priorityData={dashboardData.priorityStats}
-                requestTypeData={dashboardData.requestTypeStats || []}
-              />
+            {/* Main Dashboard Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Left Column: Status Overview */}
+              <div className="xl:col-span-2">
+                <StatusOverview 
+                  statusData={dashboardData.statusStats}
+                  priorityData={dashboardData.priorityStats}
+                  requestTypeData={dashboardData.requestTypeStats || []}
+                />
+              </div>
               
-              <SLADashboard 
-                analytics={dashboardData.analytics}
-                technicianStats={dashboardData.technicianStats}
-              />
+              {/* Right Column: Department Analytics */}
+              <div className="xl:col-span-1">
+                <DepartmentAnalytics 
+                  departmentStats={dashboardData.departmentStats || []}
+                  technicianStats={dashboardData.technicianStats || []}
+                  analytics={dashboardData.analytics}
+                />
+              </div>
             </div>
-
-            {/* Second Row: Department Analytics */}
-            <DepartmentAnalytics 
-              departmentStats={dashboardData.departmentStats || []}
-              technicianStats={dashboardData.technicianStats || []}
-              analytics={dashboardData.analytics}
-            />
 
 
           </div>

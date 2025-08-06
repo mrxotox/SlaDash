@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
   CheckCircle2, 
   Clock, 
@@ -162,24 +161,23 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
             Distribución actual por estado ({totalStatusTickets} tickets)
           </p>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {processedStatus.map((status, index) => {
-            const StatusIcon = status.icon;
-            
             return (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${status.bg}`}>
-                    <StatusIcon className={`h-4 w-4 ${status.color}`} />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm">{status.label}</h4>
-                    <p className="text-xs text-muted-foreground">{status.name}</p>
-                  </div>
+                  <div className={`w-3 h-3 rounded-full ${status.color.replace('text-', 'bg-')}`}></div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {status.name}
+                  </span>
                 </div>
-                <div className="text-right">
-                  <p className={`text-xl font-bold ${status.color}`}>{status.count}</p>
-                  <p className="text-xs text-muted-foreground">{status.percentage.toFixed(1)}%</p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    {status.count}
+                  </span>
+                  <span className="text-xs text-gray-500 min-w-[40px]">
+                    {status.percentage.toFixed(1)}%
+                  </span>
                 </div>
               </div>
             );
@@ -198,24 +196,22 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
             Distribución por nivel de prioridad ({totalPriorityTickets} tickets)
           </p>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {processedPriority.map((priority, index) => (
-            <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <div key={index} className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className={`w-4 h-4 rounded-full ${priority.bg}`}></div>
-                <div>
-                  <h4 className="font-semibold text-sm">{priority.label}</h4>
-                  <p className="text-xs text-muted-foreground">{priority.name}</p>
-                </div>
+                <div className={`w-3 h-3 rounded-full ${priority.bg}`}></div>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {priority.name}
+                </span>
               </div>
-              <div className="text-right flex items-center space-x-2">
-                <div>
-                  <p className={`text-xl font-bold ${priority.color}`}>{priority.count}</p>
-                  <p className="text-xs text-muted-foreground">{priority.percentage.toFixed(1)}%</p>
-                </div>
-                <Badge variant={priority.level >= 3 ? 'destructive' : 'outline'} className="text-xs">
-                  Nivel {priority.level}
-                </Badge>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  {priority.count}
+                </span>
+                <span className="text-xs text-gray-500 min-w-[40px]">
+                  {priority.percentage.toFixed(1)}%
+                </span>
               </div>
             </div>
           ))}
@@ -223,36 +219,37 @@ export default function StatusOverview({ statusData, priorityData, requestTypeDa
       </Card>
 
       {/* Request Type Overview */}
-      {requestTypeData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-purple-600" />
-              <span>Tipos de Requerimientos</span>
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Distribución por tipo de solicitud ({totalRequestTypeTickets} tickets)
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {processedRequestType.map((type, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-4 h-4 rounded-full ${type.bg}`}></div>
-                  <div>
-                    <h4 className="font-semibold text-sm">{type.name}</h4>
-                    <p className="text-xs text-muted-foreground">📋 Solicitud de servicio</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`text-xl font-bold ${type.color}`}>{type.count}</p>
-                  <p className="text-xs text-muted-foreground">{type.percentage.toFixed(1)}%</p>
-                </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            <span>Tipo de Solicitud</span>
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Distribución por tipo de solicitud ({totalRequestTypeTickets} tickets)
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {processedRequestType.slice(0, 5).map((type, index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className={`w-3 h-3 rounded-full bg-purple-500`}></div>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {type.name || 'Sin tipo'}
+                </span>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  {type.count}
+                </span>
+                <span className="text-xs text-gray-500 min-w-[40px]">
+                  {type.percentage.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }
