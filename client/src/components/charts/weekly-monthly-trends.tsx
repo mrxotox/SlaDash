@@ -29,6 +29,13 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
       tickets.forEach(ticket => {
         if (!ticket.createdDate) return;
         
+        // Skip canceled tickets
+        if (ticket.status?.toLowerCase().includes('cancelado') || 
+            ticket.status?.toLowerCase().includes('canceled') ||
+            ticket.status?.toLowerCase().includes('cancelled')) {
+          return;
+        }
+        
         const ticketDate = new Date(ticket.createdDate);
         if (isWithinInterval(ticketDate, { start: weekStart, end: weekEnd })) {
           weekData['Entregados']++;
@@ -75,6 +82,13 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
 
       tickets.forEach(ticket => {
         if (!ticket.createdDate) return;
+        
+        // Skip canceled tickets
+        if (ticket.status?.toLowerCase().includes('cancelado') || 
+            ticket.status?.toLowerCase().includes('canceled') ||
+            ticket.status?.toLowerCase().includes('cancelled')) {
+          return;
+        }
         
         const ticketDate = new Date(ticket.createdDate);
         

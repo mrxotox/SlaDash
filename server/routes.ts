@@ -640,9 +640,16 @@ function normalizeTechnician(technician: string): string {
 
 // Calculate status statistics using status column from Excel
 function calculateStatusStats(tickets: any[]) {
+  // Filter out canceled tickets from status statistics
+  const validTickets = tickets.filter(t => 
+    !t.status?.toLowerCase().includes('cancelado') &&
+    !t.status?.toLowerCase().includes('canceled') &&
+    !t.status?.toLowerCase().includes('cancelled')
+  );
+  
   const statusCounts: { [key: string]: number } = {};
   
-  tickets.forEach(ticket => {
+  validTickets.forEach(ticket => {
     // Use status field from Excel data, normalize common values
     const status = ticket.status || 'Sin estado';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
@@ -670,9 +677,16 @@ function calculateCategoryStats(tickets: any[]) {
 
 // Calculate department statistics
 function calculateDepartmentStats(tickets: any[]) {
+  // Filter out canceled tickets from department statistics
+  const validTickets = tickets.filter(t => 
+    !t.status?.toLowerCase().includes('cancelado') &&
+    !t.status?.toLowerCase().includes('canceled') &&
+    !t.status?.toLowerCase().includes('cancelled')
+  );
+  
   const departmentCounts: { [key: string]: number } = {};
   
-  tickets.forEach(ticket => {
+  validTickets.forEach(ticket => {
     // Use department field from Excel data
     const department = ticket.department || 'Sin departamento';
     departmentCounts[department] = (departmentCounts[department] || 0) + 1;
@@ -686,9 +700,16 @@ function calculateDepartmentStats(tickets: any[]) {
 
 // Calculate request type statistics
 function calculateRequestTypeStats(tickets: any[]) {
+  // Filter out canceled tickets from request type statistics
+  const validTickets = tickets.filter(t => 
+    !t.status?.toLowerCase().includes('cancelado') &&
+    !t.status?.toLowerCase().includes('canceled') &&
+    !t.status?.toLowerCase().includes('cancelled')
+  );
+  
   const requestTypeCounts: { [key: string]: number } = {};
   
-  tickets.forEach(ticket => {
+  validTickets.forEach(ticket => {
     // Use requestType field from Excel data
     const requestType = ticket.requestType || 'No especificado';
     requestTypeCounts[requestType] = (requestTypeCounts[requestType] || 0) + 1;
@@ -702,9 +723,16 @@ function calculateRequestTypeStats(tickets: any[]) {
 
 // Calculate priority statistics
 function calculatePriorityStats(tickets: any[]) {
+  // Filter out canceled tickets from priority statistics
+  const validTickets = tickets.filter(t => 
+    !t.status?.toLowerCase().includes('cancelado') &&
+    !t.status?.toLowerCase().includes('canceled') &&
+    !t.status?.toLowerCase().includes('cancelled')
+  );
+  
   const urgencyCounts: { [key: string]: number } = {};
   
-  tickets.forEach(ticket => {
+  validTickets.forEach(ticket => {
     // Use urgency field instead of priority
     const urgency = ticket.urgency || 'No definida';
     urgencyCounts[urgency] = (urgencyCounts[urgency] || 0) + 1;
@@ -718,9 +746,16 @@ function calculatePriorityStats(tickets: any[]) {
 
 // Calculate technician statistics
 function calculateTechnicianStats(tickets: any[]) {
+  // Filter out canceled tickets from technician statistics
+  const validTickets = tickets.filter(t => 
+    !t.status?.toLowerCase().includes('cancelado') &&
+    !t.status?.toLowerCase().includes('canceled') &&
+    !t.status?.toLowerCase().includes('cancelled')
+  );
+  
   const technicianData: { [key: string]: any } = {};
   
-  tickets.forEach(ticket => {
+  validTickets.forEach(ticket => {
     if (!technicianData[ticket.technician]) {
       technicianData[ticket.technician] = {
         name: ticket.technician,
@@ -752,16 +787,23 @@ function calculateTechnicianStats(tickets: any[]) {
 
 // Calculate analytics
 async function calculateAnalytics(tickets: any[]) {
-  const totalTickets = tickets.length;
-  const closedTickets = tickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length;
+  // Filter out canceled tickets from all calculations
+  const validTickets = tickets.filter(t => 
+    !t.status?.toLowerCase().includes('cancelado') &&
+    !t.status?.toLowerCase().includes('canceled') &&
+    !t.status?.toLowerCase().includes('cancelled')
+  );
+  
+  const totalTickets = validTickets.length;
+  const closedTickets = validTickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length;
   
   // Use isOverdue column from Excel data - if isOverdue=true then SLA is NOT compliant
-  const overdueTickets = tickets.filter(t => t.isOverdue === true).length;
-  const slaCompliantTickets = tickets.filter(t => t.isOverdue === false).length;
+  const overdueTickets = validTickets.filter(t => t.isOverdue === true).length;
+  const slaCompliantTickets = validTickets.filter(t => t.isOverdue === false).length;
   const slaCompliance = totalTickets > 0 ? (slaCompliantTickets / totalTickets) * 100 : 0;
   
   // Calculate average resolution time using Resolved Time and Created Date from Excel
-  const resolvedTickets = tickets.filter(t => t.resolvedTime && t.createdDate);
+  const resolvedTickets = validTickets.filter(t => t.resolvedTime && t.createdDate);
   const totalResolutionTime = resolvedTickets.reduce((sum, ticket) => {
     try {
       const createdTime = new Date(ticket.createdDate).getTime();
