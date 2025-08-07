@@ -54,18 +54,20 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
     return weeks;
   };
 
-  // Calculate monthly trends for last 7 months
-  const getMonthlyTrends = () => {
+  // Calculate daily trends for last 7 days (for weekly view)
+  const getDailyTrends = () => {
     const now = new Date();
-    const months = [];
-    const monthLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const days = [];
+    const dayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
     for (let i = 6; i >= 0; i--) {
-      const monthStart = startOfMonth(addMonths(now, -i));
-      const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+      const dayDate = new Date(now);
+      dayDate.setDate(now.getDate() - i);
+      const dayStart = new Date(dayDate.setHours(0, 0, 0, 0));
+      const dayEnd = new Date(dayDate.setHours(23, 59, 59, 999));
       
-      const monthData = {
-        period: monthLabels[6 - i] || `M${7 - i}`,
+      const dayData = {
+        period: dayLabels[dayStart.getDay()],
         'Entregados': 0,
         'Completados': 0,
         'Vencidos': 0
@@ -75,32 +77,37 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
         if (!ticket.createdDate) return;
         
         const ticketDate = new Date(ticket.createdDate);
-        if (isWithinInterval(ticketDate, { start: monthStart, end: monthEnd })) {
-          monthData['Entregados']++;
-          
-          // Check if resolved/closed
-          if (ticket.status?.toLowerCase().includes('cerrado') || 
-              ticket.status?.toLowerCase().includes('resolved') ||
-              ticket.status?.toLowerCase().includes('completado') ||
-              ticket.status?.toLowerCase().includes('closed')) {
-            monthData['Completados']++;
-          }
-          
-          // Check if overdue
-          if (ticket.isOverdue === true || ticket.isOverdue === 'true') {
-            monthData['Vencidos']++;
-          }
+        
+        // Count tickets created on this day
+        if (isWithinInterval(ticketDate, { start: dayStart, end: dayEnd })) {
+          dayData['Entregados']++;
+        }
+        
+        // Count tickets completed on this day (check completion date if available, otherwise use created date)
+        const completionDate = ticket.closedDate ? new Date(ticket.closedDate) : ticketDate;
+        if ((ticket.status?.toLowerCase().includes('cerrado') || 
+             ticket.status?.toLowerCase().includes('resolved') ||
+             ticket.status?.toLowerCase().includes('completado') ||
+             ticket.status?.toLowerCase().includes('closed')) &&
+            isWithinInterval(completionDate, { start: dayStart, end: dayEnd })) {
+          dayData['Completados']++;
+        }
+        
+        // Count overdue tickets (created before today and still overdue)
+        if ((ticket.isOverdue === true || ticket.isOverdue === 'true') &&
+            ticketDate <= dayEnd) {
+          dayData['Vencidos']++;
         }
       });
 
-      months.push(monthData);
+      days.push(dayData);
     }
 
-    return months;
+    return days;
   };
 
   const weeklyData = getWeeklyTrends();
-  const monthlyData = getMonthlyTrends();
+  const dailyData = getDailyTrends();
 
   // Calculate totals for legend
   const weeklyTotals = weeklyData.reduce((acc, week) => ({
@@ -109,10 +116,10 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
     vencidos: acc.vencidos + week.Vencidos
   }), { entregados: 0, completados: 0, vencidos: 0 });
 
-  const monthlyTotals = monthlyData.reduce((acc, month) => ({
-    entregados: acc.entregados + month.Entregados,
-    completados: acc.completados + month.Completados,
-    vencidos: acc.vencidos + month.Vencidos
+  const dailyTotals = dailyData.reduce((acc, day) => ({
+    entregados: acc.entregados + day.Entregados,
+    completados: acc.completados + day.Completados,
+    vencidos: acc.vencidos + day.Vencidos
   }), { entregados: 0, completados: 0, vencidos: 0 });
 
   return (
@@ -122,7 +129,7 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-lg">
             <Calendar className="h-5 w-5 text-blue-600" />
-            Solicita última mes
+            Solicitudes última mes
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -193,12 +200,12 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-lg">
             <TrendingUp className="h-5 w-5 text-blue-600" />
-            Solicita última semana
+            Solicitudes última semana
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+            <LineChart data={dailyData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis 
                 dataKey="period" 
@@ -230,7 +237,7 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
               <Line 
                 type="monotone" 
                 dataKey="Entregados" 
-                name={`Entregados(${monthlyTotals.entregados})`}
+                name={`Entregados(${dailyTotals.entregados})`}
                 stroke="#3B82F6" 
                 strokeWidth={2}
                 dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
@@ -239,7 +246,7 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
               <Line 
                 type="monotone" 
                 dataKey="Completados" 
-                name={`Completados(${monthlyTotals.completados})`}
+                name={`Completados(${dailyTotals.completados})`}
                 stroke="#10B981" 
                 strokeWidth={2}
                 dot={{ fill: '#10B981', strokeWidth: 2, r: 3 }}
@@ -248,7 +255,7 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
               <Line 
                 type="monotone" 
                 dataKey="Vencidos" 
-                name={`Vencidos(${monthlyTotals.vencidos})`}
+                name={`Vencidos(${dailyTotals.vencidos})`}
                 stroke="#EF4444" 
                 strokeWidth={2}
                 dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
