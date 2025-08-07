@@ -9,6 +9,7 @@ import DateRangeFilter from '@/components/date-range-filter';
 import PersistentFilters from '@/components/persistent-filters';
 import StatusOverview from '@/components/charts/status-overview';
 import TrendsAnalytics from '@/components/charts/trends-analytics';
+import WeeklyMonthlyTrends from '@/components/charts/weekly-monthly-trends';
 import HeatMapAnalytics from '@/components/charts/heat-map-analytics';
 import SLADashboard from '@/components/charts/sla-dashboard';
 import DepartmentAnalytics from '@/components/charts/department-analytics';
@@ -207,6 +208,10 @@ export default function Dashboard() {
               currentFilters={filters}
             />
 
+            {/* New Weekly/Monthly Trends */}
+            <WeeklyMonthlyTrends tickets={dashboardData?.allTickets || []} />
+            
+            {/* Original Advanced Analytics */}
             <TrendsAnalytics tickets={dashboardData?.allTickets || []} />
           </div>
         );
