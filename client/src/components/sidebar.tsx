@@ -66,9 +66,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       <div className="p-6">
         <div className="flex items-center gap-2 mb-8">
           <Logo size="md" />
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Mesa de Ayuda TI
-          </h1>
+          
         </div>
 
         <nav className="space-y-2">
