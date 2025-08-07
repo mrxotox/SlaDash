@@ -795,7 +795,9 @@ async function calculateAnalytics(tickets: any[]) {
   );
   
   const totalTickets = validTickets.length;
-  const closedTickets = validTickets.filter(t => t.status === 'Cerrado' || t.status === 'Closed').length;
+  const closedTickets = validTickets.filter(t => 
+    t.status === 'Cerrado' || t.status === 'Closed' || t.status === 'Cerrada'
+  ).length;
   
   // Use isOverdue column from Excel data - if isOverdue=true then SLA is NOT compliant
   const overdueTickets = validTickets.filter(t => t.isOverdue === true).length;

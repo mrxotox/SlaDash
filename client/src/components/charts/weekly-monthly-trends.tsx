@@ -15,6 +15,7 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
     const now = new Date();
     const weeks = [];
 
+    // Calculate 5 weeks back from current date (to include July 2025 data)
     for (let i = 4; i >= 0; i--) {
       const weekStart = startOfWeek(addWeeks(now, -i), { weekStartsOn: 1 });
       const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
@@ -41,7 +42,8 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
           weekData['Entregados']++;
           
           // Check if resolved/closed
-          if (ticket.status?.toLowerCase().includes('cerrado') || 
+          if (ticket.status?.toLowerCase().includes('cerrada') || 
+              ticket.status?.toLowerCase().includes('cerrado') || 
               ticket.status?.toLowerCase().includes('resolved') ||
               ticket.status?.toLowerCase().includes('completado') ||
               ticket.status?.toLowerCase().includes('closed')) {
@@ -99,7 +101,8 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
         
         // Count tickets completed on this day (check completion date if available, otherwise use created date)
         const completionDate = ticket.closedDate ? new Date(ticket.closedDate) : ticketDate;
-        if ((ticket.status?.toLowerCase().includes('cerrado') || 
+        if ((ticket.status?.toLowerCase().includes('cerrada') || 
+             ticket.status?.toLowerCase().includes('cerrado') || 
              ticket.status?.toLowerCase().includes('resolved') ||
              ticket.status?.toLowerCase().includes('completado') ||
              ticket.status?.toLowerCase().includes('closed')) &&
