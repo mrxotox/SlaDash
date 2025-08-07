@@ -9,23 +9,6 @@ interface WeeklyMonthlyTrendsProps {
   tickets: Ticket[];
 }
 
-// Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-gray-800 p-3 rounded-lg shadow-lg border">
-        <p className="text-white font-medium">{`${label}`}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
-            {`${entry.name}: ${entry.value}`}
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
 export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProps) {
   // Calculate weekly trends for last 5 weeks
   const getWeeklyTrends = () => {
@@ -37,7 +20,7 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
       const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
       
       const weekData = {
-        period: `Semana${i === 0 ? '5' : i === 1 ? '4' : i === 2 ? '3' : i === 3 ? '2' : '1'}`,
+        period: `Semana${5 - i}`,
         'Entregados': 0,
         'Completados': 0,
         'Vencidos': 0
@@ -50,15 +33,16 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
         if (isWithinInterval(ticketDate, { start: weekStart, end: weekEnd })) {
           weekData['Entregados']++;
           
-          // Check if completed
+          // Check if resolved/closed
           if (ticket.status?.toLowerCase().includes('cerrado') || 
               ticket.status?.toLowerCase().includes('resolved') ||
-              ticket.status?.toLowerCase().includes('completado')) {
+              ticket.status?.toLowerCase().includes('completado') ||
+              ticket.status?.toLowerCase().includes('closed')) {
             weekData['Completados']++;
           }
           
           // Check if overdue
-          if (ticket.isOverdue) {
+          if (ticket.isOverdue === true || ticket.isOverdue === 'true') {
             weekData['Vencidos']++;
           }
         }
@@ -94,15 +78,16 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
         if (isWithinInterval(ticketDate, { start: monthStart, end: monthEnd })) {
           monthData['Entregados']++;
           
-          // Check if completed
+          // Check if resolved/closed
           if (ticket.status?.toLowerCase().includes('cerrado') || 
               ticket.status?.toLowerCase().includes('resolved') ||
-              ticket.status?.toLowerCase().includes('completado')) {
+              ticket.status?.toLowerCase().includes('completado') ||
+              ticket.status?.toLowerCase().includes('closed')) {
             monthData['Completados']++;
           }
           
           // Check if overdue
-          if (ticket.isOverdue) {
+          if (ticket.isOverdue === true || ticket.isOverdue === 'true') {
             monthData['Vencidos']++;
           }
         }
@@ -117,63 +102,86 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
   const weeklyData = getWeeklyTrends();
   const monthlyData = getMonthlyTrends();
 
+  // Calculate totals for legend
+  const weeklyTotals = weeklyData.reduce((acc, week) => ({
+    entregados: acc.entregados + week.Entregados,
+    completados: acc.completados + week.Completados,
+    vencidos: acc.vencidos + week.Vencidos
+  }), { entregados: 0, completados: 0, vencidos: 0 });
+
+  const monthlyTotals = monthlyData.reduce((acc, month) => ({
+    entregados: acc.entregados + month.Entregados,
+    completados: acc.completados + month.Completados,
+    vencidos: acc.vencidos + month.Vencidos
+  }), { entregados: 0, completados: 0, vencidos: 0 });
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Weekly Trends */}
-      <Card className="bg-gray-900">
+      <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-white text-lg">
-            <Calendar className="h-5 w-5 text-blue-400" />
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-lg">
+            <Calendar className="h-5 w-5 text-blue-600" />
             Solicita última mes
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <LineChart data={weeklyData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis 
                 dataKey="period" 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                angle={0}
+                textAnchor="middle"
+                height={40}
               />
               <YAxis 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #D1D5DB',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+              />
               <Legend 
-                wrapperStyle={{ color: '#9CA3AF', fontSize: '12px' }}
+                wrapperStyle={{ color: '#374151', fontSize: '12px' }}
                 verticalAlign="bottom"
-                height={36}
+                height={40}
               />
               <Line 
                 type="monotone" 
                 dataKey="Entregados" 
+                name={`Entregados(${weeklyTotals.entregados})`}
                 stroke="#3B82F6" 
-                strokeWidth={3}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: '#3B82F6', strokeWidth: 2 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="Completados" 
+                name={`Completados(${weeklyTotals.completados})`}
                 stroke="#10B981" 
-                strokeWidth={3}
-                dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: '#10B981', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: '#10B981', strokeWidth: 2 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="Vencidos" 
+                name={`Vencidos(${weeklyTotals.vencidos})`}
                 stroke="#EF4444" 
-                strokeWidth={3}
-                dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#EF4444', strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: '#EF4444', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -181,60 +189,70 @@ export default function WeeklyMonthlyTrends({ tickets }: WeeklyMonthlyTrendsProp
       </Card>
 
       {/* Monthly Trends */}
-      <Card className="bg-gray-900">
+      <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-white text-lg">
-            <TrendingUp className="h-5 w-5 text-blue-400" />
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white text-lg">
+            <TrendingUp className="h-5 w-5 text-blue-600" />
             Solicita última semana
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <LineChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis 
                 dataKey="period" 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                angle={0}
+                textAnchor="middle"
+                height={40}
               />
               <YAxis 
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #D1D5DB',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+              />
               <Legend 
-                wrapperStyle={{ color: '#9CA3AF', fontSize: '12px' }}
+                wrapperStyle={{ color: '#374151', fontSize: '12px' }}
                 verticalAlign="bottom"
-                height={36}
+                height={40}
               />
               <Line 
                 type="monotone" 
                 dataKey="Entregados" 
+                name={`Entregados(${monthlyTotals.entregados})`}
                 stroke="#3B82F6" 
-                strokeWidth={3}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: '#3B82F6', strokeWidth: 2 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="Completados" 
+                name={`Completados(${monthlyTotals.completados})`}
                 stroke="#10B981" 
-                strokeWidth={3}
-                dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: '#10B981', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: '#10B981', strokeWidth: 2 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="Vencidos" 
+                name={`Vencidos(${monthlyTotals.vencidos})`}
                 stroke="#EF4444" 
-                strokeWidth={3}
-                dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#EF4444', strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: '#EF4444', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

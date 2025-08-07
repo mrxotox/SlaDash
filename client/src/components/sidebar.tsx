@@ -64,16 +64,11 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
   return (
     <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 h-screen fixed left-0 top-0 z-40">
       <div className="p-6">
-        <div className="flex items-center gap-3 mb-8">
-          <Logo size="lg" />
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Mesa de Ayuda TI
-            </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Alpha Solutions
-            </p>
-          </div>
+        <div className="flex items-center gap-2 mb-8">
+          <Logo size="md" />
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            Mesa de Ayuda TI
+          </h1>
         </div>
 
         <nav className="space-y-2">
